@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      "baseUrl": "./src",
+      "paths": {
+        "images/*": ["images/*"],
+        "components/*": ["components/*"],
+        "containers/*": ["containers/*"],
+        "translations/*": ["translations/*"]
+      }
+    },
+    "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx", "src/**/*.json"]
+  }
+  

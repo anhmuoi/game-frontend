@@ -1,0 +1,70 @@
+/*
+ * DAILY_REPORTConstants
+ * Each action has a corresponding type, which the reducer knows and picks up on.
+ * To avoid weird typos between the reducer and the actions, we save them as
+ * constants here. We prefix them with 'yourproject/YourComponent' so we avoid
+ * reducers accidentally picking up actions they shouldn't.
+ *
+ * Follow this format:
+ * export const YOUR_ACTION_CONSTANT = 'yourproject/YourContainer/YOUR_ACTION_CONSTANT';
+ */
+export const GET_DAILY_REPORT_DATA_SUCCESS =
+  'demasterpro/DAILY_REPORT/GET_DAILY_REPORT_DATA_SUCCESS';
+export const UPDATE_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/UPDATE_DAILY_REPORT';
+export const ADD_DAILY_REPORT = 'demasterpro/DAILY_REPORT/ADD_DAILY_REPORT';
+export const INIT_INDEX_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/INIT_INDEX_DAILY_REPORT';
+export const INIT_INDEX_DAILY_REPORT_SUCCESS =
+  'demasterpro/DAILY_REPORT/INIT_INDEX_DAILY_REPORT_SUCCESS';
+export const CHANGE_TEXT_FIELD = 'demasterpro/DAILY_REPORT/CHANGE_TEXT_FIELD';
+export const DELETE_DAILY_REPORT_ROW =
+  'demasterpro/DAILY_REPORT/DELETE_DAILY_REPORT_ROW';
+export const VALIDATE_DAILY_REPORT_ERROR =
+  'demasterpro/DAILY_REPORT/VALIDATE_DAILY_REPORT_ERROR';
+export const CREATE_DAILY_REPORT_SUCCESS =
+  'demasterpro/DAILY_REPORT/CREATE_DAILY_REPORT_SUCCESS';
+export const UPDATE_DAILY_REPORT_SUCCESS =
+  'demasterpro/DAILY_REPORT/UPDATE_DAILY_REPORT_SUCCESS';
+export const DELETE_DAILY_REPORT_SUCCESS =
+  'demasterpro/DAILY_REPORT/DELETE_DAILY_REPORT_SUCCESS';
+export const SET_META_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/SET_META_DAILY_REPORT';
+export const DELETE_MULTIES_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/DELETE_MULTIES_DAILY_REPORT';
+export const DELETE_MULTIES_DAILY_REPORT_SUCCESS =
+  'demasterpro/DAILY_REPORT/DELETE_MULTIES_DAILY_REPORT_SUCCESS';
+export const CHANGE_PAGE_NUMBER_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/CHANGE_PAGE_NUMBER_DAILY_REPORT';
+export const CHANGE_PAGE_SIZE_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/CHANGE_PAGE_SIZE_DAILY_REPORT';
+export const FETCH_DAILY_REPORT_DATA =
+  'demasterpro/DAILY_REPORT/FETCH_DAILY_REPORT_DATA';
+export const FETCH_DAILY_REPORT_INIT =
+  'demasterpro/DAILY_REPORT/FETCH_DAILY_REPORT_INIT';
+export const GET_SORT_DAILY_REPORT_LIST =
+  'demasterpro/DAILY_REPORT/GET_SORT_DAILY_REPORT_LIST';
+export const GET_SORT_DIRECTION_DAILY_REPORT_LIST =
+  'demasterpro/DAILY_REPORT/GET_SORT_DIRECTION_DAILY_REPORT_LIST';
+export const VALIDATE_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/VALIDATE_DAILY_REPORT';
+export const SET_STATUS_LIST_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/SET_STATUS_LIST_DAILY_REPORT';
+export const SET_GENDER_LIST_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/SET_GENDER_LIST_DAILY_REPORT';
+export const SET_DEPARTMENTS_LIST_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/SET_DEPARTMENTS_LIST_DAILY_REPORT';
+export const SET_WORKTYPES_LIST_DAILY_REPORT =
+  'demasterpro/DAILY_REPORT/SET_WORKTYPES_LIST_DAILY_REPORT';
+export const UPDATE_AVATAR = 'demasterpro/DAILY_REPORT/UPDATE_AVATAR';
+export const SET_REPORTER_LIST = 'demasterpro/DAILY_REPORT/SET_REPORTER_LIST';
+export const GET_USER_DATA_SUCCESS =
+  'demasterpro/DAILY_REPORT/GET_USER_DATA_SUCCESS';
+export const SET_FOLDER_LOG_LIST =
+  'demasterpro/DAILY_REPORT/SET_FOLDER_LOG_LIST';
+export const SET_DEPARTMENT_LIST =
+  'demasterpro/DAILY_REPORT/SET_DEPARTMENT_LIST';
+export const CHANGE_FILTER = 'demasterpro/DAILY_REPORT/CHANGE_FILTER';
+export const CLEAR_FILTER = 'demasterpro/DAILY_REPORT/CLEAR_FILTER';
+export const GET_INDEX_DAILY_REPORT_BY_USER =
+  'demasterpro/DAILY_REPORT/GET_INDEX_DAILY_REPORT_BY_USER';

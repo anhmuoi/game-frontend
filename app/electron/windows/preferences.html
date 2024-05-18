@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- The first thing in any HTML file should be the charset -->
+    <meta charset="utf-8" />
+
+    <!-- Make the page mobile compatible -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Preference</title>
+    <link href="./mui.min.css" rel="stylesheet" type="text/css" />
+    <script src="./vue.min.js"></script>
+    <script src="./mui.min.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="mui-container">
+        <div class="mui-textfield mui-textfield--float-label">
+          <input type="text" v-model="host">
+          <label>Host (Ex: https://your.domain or http://your-host-ip-address)</label>
+        </div>
+        <button type="submit" class="mui-btn mui-btn--raised mui-btn--primary" v-on:click="savePreferences">Save</button>
+        <button type="submit" class="mui-btn mui-btn--raised" v-on:click="close">Close</button>
+      </div>
+    </div>
+  </body>
+
+  <script src="./preferences.js"></script>
+  <style>
+    #app {
+      width: 400px;
+      height: 100px;
+      padding: 20px;
+
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      margin: -100px 0 0 -200px;
+    }
+  </style>
+</html>

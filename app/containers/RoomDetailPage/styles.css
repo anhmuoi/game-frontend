@@ -1,0 +1,71 @@
+.room-game {
+    background-size: cover;
+    width: 100%;
+    background-image: url('../../images//background/astral.jpg');
+}
+.room-game-list {
+    color: white;
+    display: flex;
+    margin: 0 auto;
+    width: 70%;
+    gap: 100px;
+    margin-top: 150px;
+}
+.room-game-item {
+    cursor: pointer;
+    text-align: center;
+}
+.room-game-item p {
+   line-height: 0.5;
+}
+.room-game-img {
+    width: 150px;
+}
+.room-game-logo {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+.room-game-logo img {
+    max-width: 50px;
+}
+
+.room-detail-avatar {
+    width: 200px;
+    border-radius: 50%;
+    height: 200px;
+    object-fit: cover;
+}
+.room-detail-person {
+    
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.room-detail-list {
+    margin-top: 30px;
+    padding-left: 100px;
+    padding-right: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+.room-detail-info {
+    color: white !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.room-detail-start {
+    margin-top: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}

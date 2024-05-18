@@ -1,0 +1,21 @@
+version: '2.4'
+
+x-default: &default
+  networks:
+    - dmpw-net
+  restart: always
+
+services:
+  erp-webapp:
+    << : *default
+    image: 009795078640.dkr.ecr.ap-southeast-1.amazonaws.com/erp-api:develop
+    environment:
+      - env=Development
+    volumes:
+      - ./env.js:/tmp/.env.development.js
+    command: /bin/bash -c "cp /tmp/.env.development.js /usr/share/nginx/html/.env.development.js && /usr/share/nginx/html/env.sh && nginx -g \"daemon off;\""
+    ports: 
+      - "80:80"
+
+networks:
+  dmpw-net:

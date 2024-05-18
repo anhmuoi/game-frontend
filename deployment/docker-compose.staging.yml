@@ -1,0 +1,21 @@
+version: '2.4'
+
+x-default: &default
+  networks:
+    - dmpw-net
+  restart: always
+
+services:
+  erp-webapp:
+    <<: *default
+    image: 009795078640.dkr.ecr.ap-southeast-1.amazonaws.com/erp-webapp:develop
+    environment:
+      - env=Staging
+    volumes:
+      - ./env.js:/tmp/env.staging.js
+    command: /bin/bash -c "cp /tmp/env.staging.js /usr/share/nginx/html/.env.staging.js && /usr/share/nginx/html/env.sh && nginx -g \"daemon off;\""
+
+networks:
+  dmpw-net:
+    external:
+      name: ubuntu_default

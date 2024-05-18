@@ -1,0 +1,79 @@
+.p-datatable {
+  position: relative;
+}
+
+.p-datatable table {
+  border-collapse: collapse;
+  /*width: 100%;*/
+  table-layout: fixed;
+}
+
+/*.p-datatable .p-datatable-tbody > tr > td {*/
+  /*padding: .25em .5em;*/
+/*}*/
+
+.p-datatable-header {
+  padding: .25em .5em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.p-datatable-header {
+  border-bottom: 0 none;
+}
+
+.p-datatable-scrollable-wrapper {
+  position: relative;
+}
+.p-datatable-scrollable-header,
+.p-datatable-scrollable-footer {
+  overflow: scroll;
+  border: 0 none;
+  /*margin-right: 8px;*/
+  scrollbar-color: #666;
+}
+
+.p-datatable-scrollable-body {
+  overflow: auto;
+  position: relative;
+}
+
+.p-datatable-scrollable-body::-webkit-scrollbar-thumb {
+  background-color: #666;
+  border-radius: 5px;
+}
+
+.p-datatable-scrollable-body > table > .p-datatable-tbody > tr:first-child > td {
+  border-top: 0 none;
+}
+
+.p-component, .p-component * {
+  box-sizing: border-box;
+}
+
+/* This fires as soon as the element enters the dorm */
+.green-code-enter,
+.green-code-appear {
+  background-color: #4caf50;
+}
+
+.red-code-enter,
+.red-code-appear {
+  background-color: #f44336;
+}
+
+.yellow-code-enter,
+.yellow-code-appear {
+  background-color: #ffeb3b;
+}
+
+/* This is where we can add the transition*/
+.green-code-enter-active,
+.green-code-appear-active,
+.red-code-enter-active,
+.red-code-appear-active
+.yellow-code-enter-active,
+.yellow-code-appear-active {
+  background-color: #ffffff;
+  transition: all 4000ms;
+}

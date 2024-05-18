@@ -1,0 +1,9 @@
+export const STATUS_PREPARING = 'preparing';
+export const STATUS_DOWNLOADING = 'downloading';
+export const STATUS_UPDATING = 'Updating';
+export const STATUS_COMPLETED = 'completed';
+export const STATUS_STOP = 'stop';
+export const STATUS_FAILED = 'failed';
+export const STATUS_UPLOADING = 'recovering';
+export const STATUS_REINSTALLING = 'reinstalling';
+export const STATUS_TRANSMITTING = 'transmitting';

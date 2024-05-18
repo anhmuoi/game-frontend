@@ -1,0 +1,32 @@
+.room-game {
+    background-size: cover;
+    width: 100%;
+    background-image: url('../../images//background/astral.jpg');
+}
+.room-game-list {
+    color: white;
+    display: flex;
+    margin: 0 auto;
+    width: 70%;
+    gap: 100px;
+    margin-top: 150px;
+}
+.room-game-item {
+    cursor: pointer;
+    text-align: center;
+}
+.room-game-item p {
+   line-height: 0.5;
+}
+.room-game-img {
+    width: 150px;
+}
+.room-game-logo {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+.room-game-logo img {
+    max-width: 50px;
+}
