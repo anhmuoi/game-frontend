@@ -1,0 +1,37 @@
+/* src/Winner.css */
+.winner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    background-color: #282c34;
+    color: white;
+    text-align: center;
+  }
+  
+  .winner-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #444;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .winner-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+  }
+  
+  .winner-info h2 {
+    margin: 10px 0;
+  }
+  
+  .winner-info p {
+    margin: 5px 0;
+  }
+  

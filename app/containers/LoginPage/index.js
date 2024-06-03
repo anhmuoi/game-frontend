@@ -281,7 +281,7 @@ class SignIn extends React.Component {
       // For now, WebApp could not know
       // what user who is not both system admin and primary manager has permission
       // So it sends profile page temporarily
-      window.location.assign('/');
+      window.location.assign('/room-game');
     }
   }
 

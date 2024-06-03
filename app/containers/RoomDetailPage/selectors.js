@@ -38,6 +38,10 @@ const getMetaPagingRoomDetail = () =>
   createSelector(selectRoomDetail, (roomDetailState) =>
     roomDetailState.get('metaPaging'),
   );
+const getMeetingLogsDetailSelector = () =>
+  createSelector(selectRoomDetail, (roomDetailState) =>
+    roomDetailState.get('meetingLogDetail'),
+  );
 
 export {
   selectRoomDetail,
@@ -48,4 +52,5 @@ export {
   getMetaPagingRoomDetail,
   getstoreListData,
   getUserListData,
+  getMeetingLogsDetailSelector,
 };

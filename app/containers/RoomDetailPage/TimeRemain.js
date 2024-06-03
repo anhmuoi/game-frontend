@@ -26,7 +26,7 @@ const CountdownTimer = ({ time, start, timeup }) => {
   }
   return (
     <div style={{ textAlign: 'center' }}>
-      <h1>Time Remaining: {timeRemain}</h1>
+      <h1>{timeRemain}</h1>
     </div>
   );
 };

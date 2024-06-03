@@ -74,4 +74,20 @@ export default defineMessages({
     id: `${scope}.totalPeople`,
     defaultMessage: `Total People`,
   },
+  chooseItem: {
+    id: `${scope}.chooseItem`,
+    defaultMessage: `Choose 10 NFTs you want to bring, if you don't have enough NFTs the system will randomly give you items to bring`,
+  },
+  existItem: {
+    id: `${scope}.existItem`,
+    defaultMessage: `You cannot carry items with the same attributes`,
+  },
+  outGame: {
+    id: `${scope}.outGame`,
+    defaultMessage: `Quit Room`,
+  },
+  openChat: {
+    id: `${scope}.openChat`,
+    defaultMessage: `Open Chat`,
+  },
 });

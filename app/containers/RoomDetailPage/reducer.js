@@ -33,6 +33,7 @@ import {
   UPDATE_AVATAR,
   SET_STORE_LIST_WAITING,
   SET_USER_ROOM_DETAIL,
+  GET_MEETING_LOGS_BY_ID_SUCCESS,
 } from './constants.js';
 import { mergeMetaPaging, mergeState } from './functions.js';
 
@@ -46,9 +47,11 @@ export const initialState = fromJS({
     description: { value: '', errorMessage: false },
     totalPeople: { value: 0, errorMessage: false },
     currentPeople: { value: 0, errorMessage: false },
+    currentMeetingLogId: { value: 0, errorMessage: false },
     price: { value: 0, errorMessage: false },
     userListId: { value: [], errorMessage: false },
   },
+  meetingLogDetail: null,
 
   storeList: [],
   userList: [],
@@ -81,6 +84,8 @@ function roomDetailReducer(state = initialState, action) {
 
     case SET_STORE_LIST_WAITING:
       return state.set('storeList', action.storeList);
+    case GET_MEETING_LOGS_BY_ID_SUCCESS:
+      return state.set('meetingLogDetail', action.meetingLogDetail);
     case SET_USER_ROOM_DETAIL:
       return state.set('userList', action.userList);
 

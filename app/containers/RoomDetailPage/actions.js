@@ -45,6 +45,8 @@ import {
   SET_STORE_LIST_WAITING,
   FETCH_USER_ROOM_DETAIL,
   SET_USER_ROOM_DETAIL,
+  GET_MEETING_LOGS_BY_ID,
+  GET_MEETING_LOGS_BY_ID_SUCCESS,
 } from './constants';
 
 /**
@@ -303,5 +305,17 @@ export function setUserData(userList) {
   return {
     type: SET_USER_ROOM_DETAIL,
     userList,
+  };
+}
+export function getMeetingLogsById(id) {
+  return {
+    type: GET_MEETING_LOGS_BY_ID,
+    id,
+  };
+}
+export function getInitIndexMeetingLogsSuccess(meetingLogDetail) {
+  return {
+    type: GET_MEETING_LOGS_BY_ID_SUCCESS,
+    meetingLogDetail,
   };
 }

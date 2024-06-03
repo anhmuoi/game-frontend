@@ -9,6 +9,7 @@ import {
   createRoomDetailSuccess,
   deleteMultiesRoomDetailSuccess,
   deleteRoomDetailSuccess,
+  getInitIndexMeetingLogsSuccess,
   getInitIndexRoomDetailSuccess,
   getRoomDetailDataSuccess,
   invalidModel,
@@ -31,6 +32,7 @@ import {
   FETCH_ROOM_DETAIL_DATA,
   FETCH_ROOM_DETAIL_INIT,
   FETCH_USER_ROOM_DETAIL,
+  GET_MEETING_LOGS_BY_ID,
   INIT_INDEX_ROOM_DETAIL,
   UPDATE_ROOM_DETAIL,
   UPDATE_ROOM_DETAIL_SUCCESS,
@@ -186,6 +188,7 @@ export function* getInitIndexRoomDetail(action) {
         description: '',
         totalPeople: 0,
         currentPeople: 0,
+        currentMeetingLogId: 0,
         price: 0,
       };
       yield put(getInitIndexRoomDetailSuccess(mapModelRoomDetailApiToUI(data)));
@@ -264,6 +267,30 @@ export function* deleteMultiesRoomDetail(action) {
 }
 
 /**
+ * @param(action) object: {id: id}
+ */
+export function* getMeetingLogsById(action) {
+  console.log(action.id);
+  const urlInitIndexRoomDetail = `${URL_DOMAIN}/meeting-logs/${action.id}`;
+  try {
+    if (action.id) {
+      const res = yield call(request, urlInitIndexRoomDetail, option('GET'));
+      console.log(res);
+      if (res.statusCode && res.statusCode === responseCode.internalServer) {
+        // notify to RoomDetail or throw exception
+        const err = { message: res.message };
+        throw err;
+      }
+
+      yield put(getInitIndexMeetingLogsSuccess(res));
+      yield put(loadSuccess());
+    }
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
+/**
  * Root saga manages watcher lifecycle
  */
 export default function* roomDetailData() {
@@ -279,4 +306,5 @@ export default function* roomDetailData() {
   yield takeLatest(DELETE_ROOM_DETAIL_SUCCESS, getRoomDetailData);
   yield takeLatest(UPDATE_ROOM_DETAIL_SUCCESS, getRoomDetailData);
   yield takeLatest(CREATE_ROOM_DETAIL_SUCCESS, getRoomDetailData);
+  yield takeLatest(GET_MEETING_LOGS_BY_ID, getMeetingLogsById);
 }

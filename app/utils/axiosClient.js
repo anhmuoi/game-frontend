@@ -80,7 +80,7 @@ ApiClient.interceptors.response.use(
     }
     if (originalRequest.url === `/refreshtoken`) {
       localstoreUtilites.removeAuthFromLocalStorage();
-      window.location.assign('/login');
+      // window.location.assign('/login');
       return Promise.reject(error.response.data);
     }
 

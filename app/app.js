@@ -43,7 +43,6 @@ import { Web3Provider } from '@ethersproject/providers';
 function getLibrary(provider) {
   const library = new Web3Provider(provider);
   library.pollingInterval = 8000;
-  console.log(library);
   return library;
 }
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in

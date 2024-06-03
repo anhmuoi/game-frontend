@@ -118,7 +118,8 @@ export const mainStyle = (theme) => ({
     marginTop: theme.spacing.unit,
   },
   containerBox: {
-   
+    padding: 50,
+    paddingBottom: 200,
   },
 });
 

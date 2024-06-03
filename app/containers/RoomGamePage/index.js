@@ -203,8 +203,14 @@ export class RoomGameInformationPage extends React.Component {
       messageQueue.data.userId === Number(currentUser),
     );
     if (messageQueue.type === MQTT_TYPE.NOTIFICATION.type) {
-      if (messageQueue.data.userId === Number(currentUser)) {
-        this.props.history.push(`/room-game/${messageQueue.data.room.id}`);
+      if (messageQueue.data.room.userListId.includes(Number(currentUser))) {
+        if (messageQueue.data.messageType === 'error') {
+          this.getDataRoomGameTable([], [], null);
+        } else {
+          if (messageQueue.data.action.id === 0) {
+            window.location.href = `${window.location.href}/${messageQueue.data.room.id}`;
+          }
+        }
       } else {
         this.getDataRoomGameTable([], [], null);
       }
@@ -213,13 +219,15 @@ export class RoomGameInformationPage extends React.Component {
   goToRoom = (room) => {
     const msgId = create_UUID();
 
-    console.log(msgId, window);
     window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
       msgId: msgId,
       type: MQTT_TYPE.EXPORT_MEMBER.type,
       data: {
         room: room,
         userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 0,
+        },
       },
     });
   };
