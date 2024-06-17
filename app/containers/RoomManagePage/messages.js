@@ -1,31 +1,31 @@
 import { defineMessages } from 'react-intl';
 
-export const scope = 'demasterpro.containers.roomManageSystem';
+export const scope = 'demasterpro.containers.roomManagePage';
 export default defineMessages({
   titleToolBarDelete: {
-    id: `${scope}.titleToolBarDelete`,
+    id: `demasterpro.components.Common.delete`,
     defaultMessage: `Delete`,
   },
 
   titleRoomManage: {
     id: `${scope}.titleRoomManage`,
-    defaultMessage: `RoomManage`,
+    defaultMessage: `Room Manage`,
   },
   btnCancel: {
-    id: `${scope}.btnCancel`,
+    id: `demasterpro.components.Common.cancel`,
     defaultMessage: 'Cancel',
   },
   btnSave: {
-    id: `${scope}.btnSave`,
+    id: `demasterpro.components.Common.save`,
     defaultMessage: 'Save',
   },
 
   placeholderSearchBox: {
     id: `${scope}.placeholderSearchBox`,
-    defaultMessage: `title`,
+    defaultMessage: `Name`,
   },
   confirmDelete: {
-    id: `${scope}.confirmDelete`,
+    id: `demasterpro.components.Common.confirmDelete`,
     defaultMessage: `Do you want to delete`,
   },
 
@@ -37,30 +37,15 @@ export default defineMessages({
     id: `${scope}.title`,
     defaultMessage: `Title`,
   },
-  stores: {
-    id: `${scope}.stores`,
-    defaultMessage: `Store`,
-  },
-  writer: {
-    id: `${scope}.writer`,
-    defaultMessage: `Writer`,
-  },
-  createdOn: {
-    id: `${scope}.createdOn`,
-    defaultMessage: `Date/Time`,
-  },
 
-  viewCount: {
-    id: `${scope}.viewCount`,
-    defaultMessage: `View Count`,
-  },
+ 
   editTitleModal: {
     id: `${scope}.editTitleModal`,
-    defaultMessage: `Edit RoomManage`,
+    defaultMessage: `Edit Room `,
   },
   addTitleModal: {
     id: `${scope}.addTitleModal`,
-    defaultMessage: `Add RoomManage`,
+    defaultMessage: `Add Room`,
   },
   name: {
     id: `${scope}.name`,

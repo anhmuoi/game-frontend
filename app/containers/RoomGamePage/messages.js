@@ -1,77 +1,98 @@
 import { defineMessages } from 'react-intl';
 
-export const scope = 'demasterpro.containers.roomGameSystem';
+export const scope = 'demasterpro.containers.roomGamePage';
 export default defineMessages({
   titleToolBarDelete: {
-    id: `${scope}.titleToolBarDelete`,
+    id: `demasterpro.components.Common.delete`,
     defaultMessage: `Delete`,
   },
 
   titleRoomGame: {
     id: `${scope}.titleRoomGame`,
-    defaultMessage: `RoomGame`,
+    defaultMessage: `Room Game`,
   },
   btnCancel: {
-    id: `${scope}.btnCancel`,
+    id: `demasterpro.components.Common.cancel`,
     defaultMessage: 'Cancel',
   },
   btnSave: {
-    id: `${scope}.btnSave`,
+    id: `demasterpro.components.Common.save`,
     defaultMessage: 'Save',
   },
 
-  placeholderSearchBox: {
-    id: `${scope}.placeholderSearchBox`,
-    defaultMessage: `title`,
-  },
-  confirmDelete: {
-    id: `${scope}.confirmDelete`,
-    defaultMessage: `Do you want to delete`,
-  },
-
-  id: {
-    id: `${scope}.id`,
-    defaultMessage: `ID`,
-  },
-  title: {
-    id: `${scope}.title`,
-    defaultMessage: `Title`,
-  },
-  stores: {
-    id: `${scope}.stores`,
-    defaultMessage: `Store`,
-  },
-  writer: {
-    id: `${scope}.writer`,
-    defaultMessage: `Writer`,
-  },
-  createdOn: {
-    id: `${scope}.createdOn`,
-    defaultMessage: `Date/Time`,
-  },
-
-  viewCount: {
-    id: `${scope}.viewCount`,
-    defaultMessage: `View Count`,
-  },
-  editTitleModal: {
-    id: `${scope}.editTitleModal`,
-    defaultMessage: `Edit RoomGame`,
-  },
-  addTitleModal: {
-    id: `${scope}.addTitleModal`,
-    defaultMessage: `Add RoomGame`,
-  },
-  name: {
-    id: `${scope}.name`,
-    defaultMessage: `Name`,
-  },
   price: {
-    id: `${scope}.price`,
+    id: `demasterpro.containers.roomManagePage.price`,
     defaultMessage: `Price`,
   },
   totalPeople: {
-    id: `${scope}.totalPeople`,
+    id: `demasterpro.containers.roomManagePage.totalPeople`,
     defaultMessage: `Total People`,
+  },
+
+  
+  
+  system: {
+    id: `demasterpro.containers.rankSystem.system`,
+    defaultMessage: `System`,
+  },
+  game: {
+    id: `demasterpro.containers.rankSystem.game`,
+    defaultMessage: `Game`,
+  },
+  battle: {
+    id: `demasterpro.containers.rankSystem.battle`,
+    defaultMessage: `Battle`,
+  },
+  NFTmarket: {
+    id: `demasterpro.containers.rankSystem.NFTmarket`,
+    defaultMessage: `NFT Market`,
+  },
+  market: {
+    id: `demasterpro.containers.rankSystem.market`,
+    defaultMessage: `Market`,
+  },
+  myNFTs: {
+    id: `demasterpro.containers.rankSystem.myNFTs`,
+    defaultMessage: `My NFTs`,
+  },
+  profile: {
+    id: `demasterpro.containers.rankSystem.profile`,
+    defaultMessage: `Profile`,
+  },
+  myGroup: {
+    id: `demasterpro.containers.rankSystem.myGroup`,
+    defaultMessage: `My Group`,
+  },
+  analysis: {
+    id: `demasterpro.containers.rankSystem.analysis`,
+    defaultMessage: `Analysis`,
+  },
+  friend: {
+    id: `demasterpro.containers.rankSystem.friend`,
+    defaultMessage: `Friend`,
+  },
+  history: {
+    id: `demasterpro.containers.rankSystem.history`,
+    defaultMessage: `History`,
+  },
+  community: {
+    id: `demasterpro.containers.rankSystem.community`,
+    defaultMessage: `Community`,
+  },
+  group: {
+    id: `demasterpro.containers.rankSystem.group`,
+    defaultMessage: `Group`,
+  },
+  rank: {
+    id: `demasterpro.containers.rankSystem.rank`,
+    defaultMessage: `Rank`,
+  },
+  balanceNotEnough: {
+    id: `${scope}.balanceNotEnough`,
+    defaultMessage: `Your balance is not enough`,
+  },
+  btnDismiss: {
+    id: `demasterpro.components.App.btnDismiss`,
+    defaultMessage: `Your balance is not enough`,
   },
 });

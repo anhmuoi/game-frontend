@@ -21,6 +21,10 @@ const getUserListData = () =>
   createSelector(selectRoomDetail, (roomDetailState) =>
     roomDetailState.get('userList'),
   );
+const getFriendListDataSelector = () =>
+  createSelector(selectRoomDetail, (roomDetailState) =>
+    roomDetailState.get('friendList'),
+  );
 
 const getRoomDetailDataModified = () =>
   createSelector(selectRoomDetail, (roomDetailState) =>
@@ -53,4 +57,5 @@ export {
   getstoreListData,
   getUserListData,
   getMeetingLogsDetailSelector,
+  getFriendListDataSelector,
 };

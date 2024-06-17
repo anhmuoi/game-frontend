@@ -1,9 +1,9 @@
 import { defineMessages } from 'react-intl';
 
-export const scope = 'demasterpro.containers.roomDetailSystem';
+export const scope = 'demasterpro.containers.roomDetailPage';
 export default defineMessages({
   titleToolBarDelete: {
-    id: `${scope}.titleToolBarDelete`,
+    id: `demasterpro.components.Common.delete`,
     defaultMessage: `Delete`,
   },
 
@@ -12,20 +12,17 @@ export default defineMessages({
     defaultMessage: `RoomDetail`,
   },
   btnCancel: {
-    id: `${scope}.btnCancel`,
+    id: `demasterpro.components.Common.cancel`,
     defaultMessage: 'Cancel',
   },
   btnSave: {
-    id: `${scope}.btnSave`,
+    id: `demasterpro.components.Common.save`,
     defaultMessage: 'Save',
   },
 
-  placeholderSearchBox: {
-    id: `${scope}.placeholderSearchBox`,
-    defaultMessage: `title`,
-  },
+
   confirmDelete: {
-    id: `${scope}.confirmDelete`,
+    id: `demasterpro.components.Common.confirmDelete`,
     defaultMessage: `Do you want to delete`,
   },
 
@@ -89,5 +86,25 @@ export default defineMessages({
   openChat: {
     id: `${scope}.openChat`,
     defaultMessage: `Open Chat`,
+  },
+  createBattle: {
+    id: `${scope}.createBattle`,
+    defaultMessage: `Create Battle`,
+  },
+  deposit: {
+    id: `${scope}.deposit`,
+    defaultMessage: `Deposit`,
+  },
+  deposited: {
+    id: `${scope}.deposited`,
+    defaultMessage: `Deposited`,
+  },
+  receiveReward: {
+    id: `${scope}.receiveReward`,
+    defaultMessage: `Receive Reward`,
+  },
+  notiGetFriend: {
+    id: `${scope}.notiGetFriend`,
+    defaultMessage: `You received a friend request from: `,
   },
 });

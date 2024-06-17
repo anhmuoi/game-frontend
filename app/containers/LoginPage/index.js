@@ -162,7 +162,7 @@ const getModalSize = () => {
   return size;
 };
 
-const AccountInfo = ({ loginByAddress }) => {
+const AccountInfo = ({ loginByAddress, history }) => {
   const { account } = useWeb3React();
   // const [toggle, setToggle] = useState(false)
   console.log(account);
@@ -179,7 +179,7 @@ const AccountInfo = ({ loginByAddress }) => {
 
   return (
     <div style={{ zIndex: 11 }}>
-      <Header loginByAddress={() => handleLoginByAddress()} />
+      <Header loginByAddress={() => handleLoginByAddress()} history={history} />
     </div>
   );
 };
@@ -246,7 +246,13 @@ class SignIn extends React.Component {
     // handle submit login call
     const { username, temporaryToken, rememberMe } = this.state;
     if (companyId && temporaryToken) {
-      this.props.onLogin(companyId, temporaryToken, username, rememberMe);
+      this.props.onLogin(
+        companyId,
+        temporaryToken,
+        username,
+        rememberMe,
+        false,
+      );
     } else {
       this.props.inValid({
         message: <FormattedMessage {...messages.mesInvalidLogin} />,
@@ -254,10 +260,16 @@ class SignIn extends React.Component {
     }
   };
 
-  login = () => {
+  login = (address) => {
     const { username, password, rememberMe } = this.state;
+    console.log(address ? true : false);
     if (username && password) {
-      this.props.onOldLogin(username, password, rememberMe);
+      this.props.onOldLogin(
+        username,
+        password,
+        rememberMe,
+        address ? true : false,
+      );
     } else {
       this.props.inValid({
         message: <FormattedMessage {...messages.mesInvalidLogin} />,
@@ -339,30 +351,8 @@ class SignIn extends React.Component {
       username: address,
       password: '123456789',
     });
-    const res = await ApiClient.loginByAddress({
-      address,
-    });
-    if (res.statusCode === 1005) {
-      await this.setState({
-        pageContinueLoginNewSession: true,
-        enableRemoveOldSession: true,
-      });
-      return;
-    } else {
-      await this.setState({
-        pageContinueLoginNewSession: false,
-        enableRemoveOldSession: false,
-      });
-    }
 
-    if (res.temporaryToken) {
-      this.setState({
-        temporaryToken: res.temporaryToken,
-        companies: res.companies,
-      });
-    } else {
-      this.login();
-    }
+    this.login(address);
   };
 
   render() {
@@ -375,7 +365,7 @@ class SignIn extends React.Component {
       companies,
       pageContinueLoginNewSession,
     } = this.state;
-    const { classes, loading, error, success } = this.props;
+    const { classes, loading, error, success, history } = this.props;
 
     const send = true;
     const stopSendEmail = success ? send : false;
@@ -440,7 +430,10 @@ class SignIn extends React.Component {
 
     return (
       <React.Fragment>
-        <AccountInfo loginByAddress={this.handleLoginByAddress} />
+        <AccountInfo
+          loginByAddress={this.handleLoginByAddress}
+          history={history}
+        />
         <img
           style={{
             width: '100%',
@@ -572,6 +565,7 @@ class SignIn extends React.Component {
                       className={classes.btnPassword}
                       onClick={this.openModal}
                       fullWidth
+                      style={{ color: 'white' }}
                     >
                       <FormattedMessage {...messages.forgotPassword} />
                     </Button>
@@ -642,12 +636,16 @@ export function mapDispatchToProps(dispatch) {
   return {
     onOpenForgotPassModal: () => dispatch(openForgotPassModal()),
     inValid: (err) => dispatch(invalidInput(err)),
-    onLogin: (companyId, temporaryToken, username, rememberMe) =>
+    onLogin: (companyId, temporaryToken, username, rememberMe, haveAddress) =>
       dispatch(
-        submitLogin({ companyId, temporaryToken, username }, rememberMe),
+        submitLogin(
+          { companyId, temporaryToken, username },
+          rememberMe,
+          haveAddress,
+        ),
       ),
-    onOldLogin: (username, password, rememberMe) =>
-      dispatch(submitLogin({ username, password }, rememberMe)),
+    onOldLogin: (username, password, rememberMe, haveAddress) =>
+      dispatch(submitLogin({ username, password }, rememberMe, haveAddress)),
     onSendMailForgotPass: (email) => dispatch(sendMailForgotPass(email)),
   };
 }

@@ -9,10 +9,12 @@ import {
   createRoomDetailSuccess,
   deleteMultiesRoomDetailSuccess,
   deleteRoomDetailSuccess,
+  getFriendUserIdSuccess,
   getInitIndexMeetingLogsSuccess,
   getInitIndexRoomDetailSuccess,
   getRoomDetailDataSuccess,
   invalidModel,
+  onAddFriendSuccess,
   setDepartmentsListRoomDetail,
   setGenderListRoomDetail,
   setMetaRoomDetail,
@@ -32,8 +34,10 @@ import {
   FETCH_ROOM_DETAIL_DATA,
   FETCH_ROOM_DETAIL_INIT,
   FETCH_USER_ROOM_DETAIL,
+  GET_FRiEND_BY_USERID,
   GET_MEETING_LOGS_BY_ID,
   INIT_INDEX_ROOM_DETAIL,
+  ON_ADD_FRIEND,
   UPDATE_ROOM_DETAIL,
   UPDATE_ROOM_DETAIL_SUCCESS,
 } from './constants.js';
@@ -42,6 +46,7 @@ import { convertShowDateTime, formatDateToSend } from '../../utils/utils.js';
 import { notifySuccess } from '../App/actions.js';
 import { mapIdsToQueryString, mapModelRoomDetailApiToUI } from './functions.js';
 import { getMetaPagingRoomDetail } from './selectors.js';
+import { localstoreUtilites } from '../../utils/persistenceData.js';
 
 export function getMeta(meta, departmentIds, status, search) {
   const metaRoomDetail = {
@@ -167,12 +172,10 @@ export function* postRoomDetailAdd(action) {
  * @param(action) object: {id: id}
  */
 export function* getInitIndexRoomDetail(action) {
-  console.log(action.id);
   const urlInitIndexRoomDetail = `${URL_DOMAIN}/meeting-rooms/${action.id}`;
   try {
     if (action.id) {
       const res = yield call(request, urlInitIndexRoomDetail, option('GET'));
-      console.log(mapModelRoomDetailApiToUI(res), res);
       if (res.statusCode && res.statusCode === responseCode.internalServer) {
         // notify to RoomDetail or throw exception
         const err = { message: res.message };
@@ -270,12 +273,10 @@ export function* deleteMultiesRoomDetail(action) {
  * @param(action) object: {id: id}
  */
 export function* getMeetingLogsById(action) {
-  console.log(action.id);
   const urlInitIndexRoomDetail = `${URL_DOMAIN}/meeting-logs/${action.id}`;
   try {
     if (action.id) {
       const res = yield call(request, urlInitIndexRoomDetail, option('GET'));
-      console.log(res);
       if (res.statusCode && res.statusCode === responseCode.internalServer) {
         // notify to RoomDetail or throw exception
         const err = { message: res.message };
@@ -285,6 +286,63 @@ export function* getMeetingLogsById(action) {
       yield put(getInitIndexMeetingLogsSuccess(res));
       yield put(loadSuccess());
     }
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
+export function* getFriendData(action) {
+  const userId = localstoreUtilites.getUserIdFromLocalStorage();
+
+  const getFriendURL = `${URL_DOMAIN}/friends?getAll=true${
+    userId ? `&userId=${Number(userId)}` : ''
+  }`;
+
+  try {
+    const res = yield call(request, getFriendURL.trim(), option('GET'));
+
+    if (!res.data) {
+      const err = { message: res.message };
+      throw err;
+    }
+
+    // dispatch to Market reducer
+
+    yield put(getFriendUserIdSuccess(res.data));
+    // hide progress
+    yield put(loadSuccess());
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
+export function* postAddFriend(action) {
+  const urlAddRoomDetail = `${URL_DOMAIN}/friends`;
+  let userId1 = action.userId1;
+  let userId2 = action.userId2;
+
+  try {
+    const res = yield call(
+      request,
+      urlAddRoomDetail,
+      option('POST', { id: 0, userId1, userId2 }),
+    );
+
+    if (checkRes(res.statusCode)) {
+      // model invalid
+      if (res.statusCode === responseCode.validationFailed) {
+        // hightlight field error
+        yield put(invalidModel(res.errors));
+      }
+
+      const err = { message: res.message };
+      throw err;
+    }
+
+    yield getFriendData();
+    // success redirect to RoomDetail page
+    yield put(onAddFriendSuccess(res.message));
+    // hide progress
   } catch (err) {
     yield put(fetchApiError(err));
   }
@@ -307,4 +365,8 @@ export default function* roomDetailData() {
   yield takeLatest(UPDATE_ROOM_DETAIL_SUCCESS, getRoomDetailData);
   yield takeLatest(CREATE_ROOM_DETAIL_SUCCESS, getRoomDetailData);
   yield takeLatest(GET_MEETING_LOGS_BY_ID, getMeetingLogsById);
+
+  // friend
+  yield takeLatest(GET_FRiEND_BY_USERID, getFriendData);
+  yield takeLatest(ON_ADD_FRIEND, postAddFriend);
 }

@@ -1,6 +1,6 @@
 import { defineMessages } from 'react-intl';
 
-export const scope = 'demasterpro.containers.userPage';
+export const scope = 'demasterpro.containers.UserPage';
 export default defineMessages({
   btnExport: {
     id: `demasterpro.components.Common.export`,
@@ -116,5 +116,13 @@ export default defineMessages({
   invalidConfirmPassword: {
     id: `${scope}.invalidConfirmPassword`,
     defaultMessage: 'Confirm Password can not be blank.',
+  },
+  checkTransactionHistory: {
+    id: `${scope}.checkTransactionHistory`,
+    defaultMessage: 'Check Transaction History',
+  },
+  walletAddress: {
+    id: `${scope}.walletAddress`,
+    defaultMessage: 'Wallet Address',
   },
 });

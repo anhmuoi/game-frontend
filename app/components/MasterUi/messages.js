@@ -16,14 +16,14 @@ export default defineMessages({
   },
   department: {
     id: `${scope}.department`,
-    defaultMessage: `Department`,
+    defaultMessage: `Group`,
   },
   system: {
     id: `${scope}.system`,
     defaultMessage: `System`,
   },
-  role: {
-    id: `${scope}.role`,
+  roleSetting: {
+    id: `${scope}.roleSetting`,
     defaultMessage: `Role Setting`,
   },
   categoryManage: {
@@ -74,5 +74,13 @@ export default defineMessages({
   roomManage: {
     id: `${scope}.roomManage`,
     defaultMessage: `Room Manage`,
+  },
+  nft: {
+    id: `${scope}.nft`,
+    defaultMessage: `NFT`,
+  },
+  nftMarket: {
+    id: `${scope}.nftMarket`,
+    defaultMessage: `NFT Market`,
   },
 });

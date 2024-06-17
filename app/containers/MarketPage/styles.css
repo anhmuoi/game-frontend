@@ -1,0 +1,85 @@
+.room-game {
+    background-size: cover;
+    width: 100%;
+    background-image: url('../../images//background/astral.jpg');
+}
+.room-game-list {
+    color: white;
+    display: flex;
+    margin: 0 auto;
+    width: 70%;
+    gap: 100px;
+    margin-top: 150px;
+}
+.room-game-item {
+    cursor: pointer;
+    text-align: center;
+}
+.room-game-item p {
+   line-height: 0.5;
+}
+.room-game-img {
+    width: 150px;
+}
+.room-game-logo {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+.room-game-logo img {
+    max-width: 50px;
+}
+
+
+.proSidebar {
+    height: 100vh !important;
+}
+.proSidebar__header {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+}
+.proSidebar__header__logo {
+    width: 100px;
+    transition: 0.3s;
+}
+.proSidebar__collapseBtn {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    right: 0px;
+    bottom: 13px;
+    background-color: transparent;
+}
+.proSidebar .relative {
+    position: inherit;
+}
+.img-size-75 {
+    width: 75px;
+}
+.pro-sidebar .pro-menu > ul > .pro-sub-menu > .pro-inner-list-item {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.modal-sell-item {
+    width: 500px;
+    height: 230px;
+    position: absolute !important;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    transition: 0.4s;
+    z-index: 11;
+    border-radius: 5px;
+    padding: 20px;
+    position: relative;
+    color: black;
+}
+.modal-sell-close {
+    position: absolute !important;
+    right: 20px !important;
+    top: 20px !important;
+    color: black !important;
+}

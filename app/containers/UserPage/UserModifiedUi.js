@@ -201,9 +201,11 @@ export class UserModifiedUi extends React.Component {
       listDepartment,
 
       listRole,
+      rowsSelectedId,
     } = this.props;
 
     const {
+      id,
       avatar,
       createdOn,
       departmentId,
@@ -217,6 +219,7 @@ export class UserModifiedUi extends React.Component {
       confirmPassword,
       userName,
       roleId,
+      walletAddress,
     } = userDataModified.toJS();
     const { tabSelected } = this.state;
 
@@ -313,16 +316,16 @@ export class UserModifiedUi extends React.Component {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <InputUI
-                        id="userName"
-                        name="userName"
-                        required
+                        id="walletAddress"
+                        name="walletAddress"
+                        value={walletAddress.value}
                         onChange={onChangeTextField}
-                        value={userName.value}
-                        label={<FormattedMessage {...messages.email} />}
-                        textHelperError={userName.errorMessage}
+                        label={<FormattedMessage {...messages.walletAddress} />}
+                        textHelperError={walletAddress.errorMessage}
+                        required
                       />
                     </Grid>
-                    {/* <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} sm={6}>
                       <InputUI
                         id="email"
                         name="email"
@@ -332,7 +335,18 @@ export class UserModifiedUi extends React.Component {
                         label={<FormattedMessage {...messages.email} />}
                         textHelperError={email.errorMessage}
                       />
-                    </Grid> */}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <InputUI
+                        id="userName"
+                        name="userName"
+                        required
+                        onChange={onChangeTextField}
+                        value={userName.value}
+                        label={<FormattedMessage {...messages.userName} />}
+                        textHelperError={userName.errorMessage}
+                      />
+                    </Grid>
                     <Grid item xs={12} sm={6} style={{ alignSelf: 'center' }}>
                       <SelectUI
                         value={departmentId.value}
@@ -390,6 +404,21 @@ export class UserModifiedUi extends React.Component {
                         textHelperError={phone.errorMessage}
                       />
                     </Grid>
+                    <Grid item md container>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        onClick={() =>
+                          (window.location.href = `https://testnet.bscscan.com/address/${userName.value}`)
+                        }
+                        id="btnCheckHistory"
+                      >
+                        <FormattedMessage
+                          {...messages.checkTransactionHistory}
+                        />
+                      </Button>
+                    </Grid>
                   </Grid>
                 </React.Fragment>
               </TabContainer>
@@ -438,19 +467,24 @@ export class UserModifiedUi extends React.Component {
                 />
                 <FormattedMessage {...messages.btnCancel} />
               </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={this.onSaveUser}
-                className={classes.button}
-                id="btnSave"
-                disabled={!name.value || !userName.value}
-              >
-                <SaveIcon
-                  className={classNames(classes.rightIcon, classes.iconSmall)}
-                />
-                <FormattedMessage {...messages.btnSave} />
-              </Button>
+              {(id.value !== 0 &&
+                id.value ===
+                  Number(localstoreUtilites.getUserIdFromLocalStorage())) ||
+              id.value === 0 ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={this.onSaveUser}
+                  className={classes.button}
+                  id="btnSave"
+                  disabled={!name.value || !userName.value}
+                >
+                  <SaveIcon
+                    className={classNames(classes.rightIcon, classes.iconSmall)}
+                  />
+                  <FormattedMessage {...messages.btnSave} />
+                </Button>
+              ) : null}
             </div>
           </React.Fragment>
         </div>

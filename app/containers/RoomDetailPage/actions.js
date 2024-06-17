@@ -47,6 +47,10 @@ import {
   SET_USER_ROOM_DETAIL,
   GET_MEETING_LOGS_BY_ID,
   GET_MEETING_LOGS_BY_ID_SUCCESS,
+  GET_FRiEND_BY_USERID,
+  GET_FRiEND_BY_USERID_SUCCESS,
+  ON_ADD_FRIEND,
+  ON_ADD_FRIEND_SUCCESS,
 } from './constants';
 
 /**
@@ -317,5 +321,30 @@ export function getInitIndexMeetingLogsSuccess(meetingLogDetail) {
   return {
     type: GET_MEETING_LOGS_BY_ID_SUCCESS,
     meetingLogDetail,
+  };
+}
+export function getFriendUserId(userId) {
+  return {
+    type: GET_FRiEND_BY_USERID,
+    userId,
+  };
+}
+export function getFriendUserIdSuccess(friendList) {
+  return {
+    type: GET_FRiEND_BY_USERID_SUCCESS,
+    friendList,
+  };
+}
+export function onAddFriend(userId1, userId2) {
+  return {
+    type: ON_ADD_FRIEND,
+    userId1,
+    userId2,
+  };
+}
+export function onAddFriendSuccess(message) {
+  return {
+    type: ON_ADD_FRIEND_SUCCESS,
+    message,
   };
 }

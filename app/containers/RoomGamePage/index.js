@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/alt-text */
-import { withStyles } from '@material-ui/core';
+import { AppBar, IconButton, Tooltip, withStyles } from '@material-ui/core';
 import { makeSelectError, makeSelectLoading } from 'containers/App/selectors';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -12,7 +12,9 @@ import injectSaga from 'utils/injectSaga';
 import reducer from './reducer.js';
 import saga from './saga.js';
 import { mainStyle } from './styles.js';
-
+import { enqueueSnackbar } from 'notistack';
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import imgAttack from 'images/people/attack.png';
 import { FormattedMessage } from 'react-intl';
 import { API_COLUMNS, MQTT_TYPE } from '../../utils/constants.js';
@@ -43,8 +45,16 @@ import {
 import Header from '../../components/Header/index.js';
 import { create_UUID } from '../../utils/utils.js';
 import WebSocketMqtt from '../../utils/mqtt.js';
+import { Close, Menu } from '@material-ui/icons';
+import Sidebar from './Sidebar.js';
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
+import { Web3ReactProvider, InjectedConnector } from '@web3-react/core';
+import { ethers } from 'ethers';
+import { balanceNotEnough } from '../../utils/translation.js';
 
+
+
+toast.configure()
 export const headers = [
   {
     id: 'name',
@@ -78,12 +88,43 @@ export class RoomGameInformationPage extends React.Component {
     rowsSelectedId: null,
     statusFilter: [],
     departmentsIdFilter: [],
+    openMenu: false,
+    collapse: true,
+    toggle: false,
+
+    account: null,
+    balance: null,
+    message: '',
   };
 
   componentDidMount() {
     this.getDataRoomGameTable([], [], null);
     // this.props.getRoomGameInit();
+    this.connectWallet();
   }
+  connectWallet = async () => {
+    try {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const account = await signer.getAddress();
+      this.setState({ account }, this.getBalance);
+    } catch (error) {
+      console.error('Error connecting to wallet:', error);
+      this.setState({ message: 'Error connecting to wallet' });
+    }
+  };
+
+  getBalance = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const balance = await provider.getBalance(this.state.account);
+      this.setState({ balance: ethers.utils.formatEther(balance) }); // Định dạng số dư dưới dạng BNB
+    } catch (error) {
+      console.error('Error getting balance:', error);
+      this.setState({ message: 'Error getting balance' });
+    }
+  };
 
   getDataRoomGameTable(departmentIds, status, search) {
     this.props.onGetRoomGameData(departmentIds, status, search);
@@ -217,6 +258,19 @@ export class RoomGameInformationPage extends React.Component {
     }
   };
   goToRoom = (room) => {
+    if (Number(room.price) > Number(this.state.balance)) {
+      toast.error(balanceNotEnough(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      })
+      return;
+    }
     const msgId = create_UUID();
 
     window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
@@ -232,8 +286,41 @@ export class RoomGameInformationPage extends React.Component {
     });
   };
 
+  openMenu = () => {
+    this.setState({
+      openMenu: true,
+    });
+  };
+  closeMenu = () => {
+    this.setState({
+      openMenu: false,
+    });
+  };
+  setCollapse = (value) => {
+    this.setState({
+      collapse: value,
+    });
+  };
+  setToggle = (value) => {
+    this.setState({
+      toggle: value,
+    });
+  };
+
   render() {
-    const { roomGameIdSelected, openModal, rowsSelectedId } = this.state;
+    const {
+      roomGameIdSelected,
+      openModal,
+      rowsSelectedId,
+      openMenu,
+      toggle,
+      collapse,
+      account,
+      balance,
+      message,
+    } = this.state;
+
+    console.log(account, balance, message);
     const {
       onUpdateRoomGame,
 
@@ -250,6 +337,14 @@ export class RoomGameInformationPage extends React.Component {
 
     return (
       <div className="room-game">
+        <Sidebar
+          collapse={collapse}
+          setCollapse={this.setCollapse}
+          toggle={toggle}
+          setToggle={this.setToggle}
+          history={history}
+        />
+
         {/* <img
           style={{
             width: '100%',
@@ -262,7 +357,7 @@ export class RoomGameInformationPage extends React.Component {
           src={battlegrounds[0].image}
           alt=""
         /> */}
-        <Header loginByAddress={() => null} />
+        <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
         </div>

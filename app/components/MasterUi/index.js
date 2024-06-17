@@ -94,7 +94,7 @@ class MasterUI extends React.Component {
         <img
           className={classNames(classes.logo, this.state.open && classes.hide)}
           src={logoSmore}
-          alt="DeMasterPro"
+          alt="Game"
         />
       </a>
     );
@@ -164,7 +164,7 @@ class MasterUI extends React.Component {
                             this.state.open && classes.hide,
                           )}
                           src={logo}
-                          alt="DeMasterPro"
+                          alt="Game"
                         />
                       </a>
                     ) : (
@@ -238,11 +238,11 @@ class MasterUI extends React.Component {
             <div className={classes.logo_toolbar}>
               {role === TYPE_ACCOUNT.primaryManager ? (
                 <a href="device-monitoring">
-                  <img className={classes.logo} src={logo} alt="DeMasterPro" />
+                  <img className={classes.logo} src={logo} alt="Game" />
                 </a>
               ) : (
                 <a
-                  href="/"
+                  href="/room-game"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -251,11 +251,7 @@ class MasterUI extends React.Component {
                     overflow: 'hidden',
                   }}
                 >
-                  <img
-                    className={classes.logo}
-                    src={logoSmore}
-                    alt="DeMasterPro"
-                  />
+                  <img className={classes.logo} src={logoSmore} alt="Game" />
                 </a>
               )}
               <IconButton

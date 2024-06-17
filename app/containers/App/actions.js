@@ -57,11 +57,11 @@ export function sendEmailSuccess(message) {
 /**
  * @param {login} : payload for submit login: {username:'', password:''}
  */
-export function submitLogin(payload, data, rememberMe) {
+export function submitLogin(payload, rememberMe, haveAddress) {
   return {
     type: SUBMIT_LOGIN,
     payload: payload,
-    data: data,
+    haveAddress: haveAddress,
     rememberMe,
   };
 }

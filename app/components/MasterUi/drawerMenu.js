@@ -672,7 +672,7 @@ class DrawerMenu extends React.Component {
           </Collapse> */}
 
           {/* system */}
-          {/* {this.isRenderMenu(MENU_NAMES.system) && (
+          {this.isRenderMenu(MENU_NAMES.system) && (
             <ListItem
               button
               onClick={() => this.handleOpenSubmenu('system')}
@@ -691,23 +691,36 @@ class DrawerMenu extends React.Component {
             unmountOnExit
           >
             <List component="div" disablePadding>
-              {this.isRole(ROUTE.role) && (
-                <ListItem
-                  button
-                  className={classes.nested}
-                  selected={this.state.selectedIndex === ROUTE.role}
-                  onClick={(event) =>
-                    this.handleListItemClick(event, ROUTE.role, ROUTE.role)
-                  }
-                  id="role"
-                >
-                  <ListItemText disableTypography>
-                    <FormattedMessage {...messages.role} />
-                  </ListItemText>
-                </ListItem>
-              )}
+              <ListItem
+                button
+                className={classes.nested}
+                selected={this.state.selectedIndex === ROUTE.nft}
+                onClick={(event) =>
+                  this.handleListItemClick(event, ROUTE.nft, ROUTE.nft)
+                }
+                id="nft"
+              >
+                <ListItemText disableTypography>
+                  <FormattedMessage {...messages.nft} />
+                </ListItemText>
+              </ListItem>
             </List>
-          </Collapse> */}
+            {this.isRole(ROUTE.role) && (
+              <ListItem
+                button
+                className={classes.nested}
+                selected={this.state.selectedIndex === ROUTE.role}
+                onClick={(event) =>
+                  this.handleListItemClick(event, ROUTE.role, ROUTE.role)
+                }
+                id="role"
+              >
+                <ListItemText disableTypography>
+                  <FormattedMessage {...messages.roleSetting} />
+                </ListItemText>
+              </ListItem>
+            )}
+          </Collapse>
         </List>
       </div>
     );

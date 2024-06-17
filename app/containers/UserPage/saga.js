@@ -179,9 +179,10 @@ export function* getInitIndexUser(action) {
       const roleList = yield select(getRolesListData());
       const roleDefault = roleList.find((i) => i.isDefault === true);
       const data = {
+        id: 0,
         avatar: '',
         name: '',
-        userName: '',
+        userName: '1',
         phone: '',
         departmentId: null,
         position: '',
@@ -190,6 +191,8 @@ export function* getInitIndexUser(action) {
         holiday: 0,
         password: '',
         confirmPassword: '',
+        walletAddress: '',
+        ownerRoom: 0,
         roleId: roleDefault !== null ? roleDefault.id : 0,
         language: 'en-US',
         timezone: 'Etc/UTC',

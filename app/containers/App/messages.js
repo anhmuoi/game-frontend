@@ -74,4 +74,8 @@ export default defineMessages({
     id: `${scope}.titleRoomManageRoute`,
     defaultMessage: `Room Manage`,
   },
+  titleNFT: {
+    id: `${scope}.titleNFT`,
+    defaultMessage: `NFT`,
+  },
 });

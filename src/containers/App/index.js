@@ -64,7 +64,7 @@ export default function App() {
           <AppWrapper>
             <Helmet
               titleTemplate={`%s - ${PAGE_TITLE}`}
-              defaultTitle="ERP Project"
+              defaultTitle="Game Project"
             >
               <meta name="description" content="WaitingKiosk" />
             </Helmet>

@@ -27,8 +27,9 @@ export const loginOption = (body, method = 'GET') => ({
 });
 
 export function* loginRemote(action) {
+  console.log(action);
   const loginURL = action.payload.password
-    ? `${URL_DOMAIN}/login`
+    ? `${URL_DOMAIN}/login?haveAddress=${action.haveAddress}`
     : `${URL_DOMAIN}/login-step2`;
   // const getTzURL = `${URL_DOMAIN}/accounts/get-timezone-by-standard`;
   try {
@@ -49,7 +50,7 @@ export function* loginRemote(action) {
       localstoreUtilites.saveToLocalStorage(
         res.authToken,
         res.accountType,
-        cookieExpires,
+        14 * 24 * 60,
       );
     }
     localstoreUtilites.saveRefreshTokenToLocalStorage(res.refreshToken);

@@ -26,6 +26,7 @@ import reducer from './reducer.js';
 import { mapModelRoomGameUiToApi } from './functions.js';
 import { styles } from './styles.js';
 
+
 // const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
 class RoomGameModifiedUi extends React.PureComponent {
   onSaveRoomGame = () => {

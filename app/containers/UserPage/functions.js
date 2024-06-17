@@ -42,6 +42,8 @@ export const mapModelUserUiToApi = (userUi) => {
     timezone: '',
     createdOn: new Date(),
     roleId: 1,
+    walletAddress: '',
+    ownerRoom: 0,
   };
 
   if (userUi) {

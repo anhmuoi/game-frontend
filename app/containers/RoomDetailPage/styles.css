@@ -38,12 +38,25 @@
     object-fit: cover;
 }
 .room-detail-person {
-    
+    position: relative;
     color: white;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+.add-friend {
+    position: absolute;
+    right: 10px;
+    top: 22px;
+    background: #00B5AD;
+    border-radius: 100%;
+    padding: 5px;
+    width: 40px;
+    height: 30px;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
 }
 .room-detail-list {
     margin-top: 30px;

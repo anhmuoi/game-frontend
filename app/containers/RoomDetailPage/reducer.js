@@ -34,6 +34,8 @@ import {
   SET_STORE_LIST_WAITING,
   SET_USER_ROOM_DETAIL,
   GET_MEETING_LOGS_BY_ID_SUCCESS,
+  GET_FRiEND_BY_USERID_SUCCESS,
+  ON_ADD_FRIEND_SUCCESS,
 } from './constants.js';
 import { mergeMetaPaging, mergeState } from './functions.js';
 
@@ -55,6 +57,7 @@ export const initialState = fromJS({
 
   storeList: [],
   userList: [],
+  friendList: [],
 
   ajaxSuccess: { value: false, message: '' },
   isRedirect: { value: false, route: '' },
@@ -88,11 +91,14 @@ function roomDetailReducer(state = initialState, action) {
       return state.set('meetingLogDetail', action.meetingLogDetail);
     case SET_USER_ROOM_DETAIL:
       return state.set('userList', action.userList);
+    case GET_FRiEND_BY_USERID_SUCCESS:
+      return state.set('friendList', action.friendList);
 
     case DELETE_MULTIES_ROOM_DETAIL_SUCCESS:
     case DELETE_ROOM_DETAIL_SUCCESS:
     case UPDATE_ROOM_DETAIL_SUCCESS:
     case CREATE_ROOM_DETAIL_SUCCESS:
+    case ON_ADD_FRIEND_SUCCESS:
       return state.set(
         'ajaxSuccess',
         fromJS({ value: true, message: action.message }),

@@ -55,6 +55,8 @@ export const initialState = fromJS({
     timezone: { value: '', errorMessage: false },
     createdOn: { value: '', errorMessage: false },
     roleId: { value: 1, errorMessage: false },
+    walletAddress: { value: '', errorMessage: false },
+    ownerRoom: { value: 0, errorMessage: false },
   },
   roleList: [],
   departmentsList: [],

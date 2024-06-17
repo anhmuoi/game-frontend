@@ -47,6 +47,7 @@ export function getMeta(meta, departmentIds, status, search) {
     orderBy: '',
     pageNumber: 1,
     pageSize: 25,
+    sortColumn: 'Name',
   };
   const metaPaging = meta ? meta.toJSON() : metaRoomManage;
   return `${URL_DOMAIN}/meeting-rooms?pageNumber=${

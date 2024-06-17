@@ -6,7 +6,7 @@ import { TYPE_ACCOUNT, LANGUAGE } from './constants';
  * Utilites for using localStorage API
  * e.g: save. remove, get...token returned from remote api login.
  */
-const DEMASTERPRO_AUTHINFO = 'DEMASTERPRO_TOKEN_LOGIN';
+const DEMASTERPRO_AUTHINFO = 'CARD_GAME_TOKEN_LOGIN';
 const DEMASTERPRO_LANGUAGE = 'DEMASTERPRO_LANGUAGE';
 const DEMASTERPRO_USERNAME = 'DEMASTERPRO_USERNAME';
 const DEMASTERPRO_COMPANYCODE = 'DEMASTERPRO_COMPANYCODE';

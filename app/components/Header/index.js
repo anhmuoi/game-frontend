@@ -13,7 +13,7 @@ import './header.css';
 let isConfirm = false;
 
 function Header(props) {
-  const { setToggle, loginByAddress } = props;
+  const { setToggle, loginByAddress, history } = props;
   const {
     account,
     activate,
@@ -206,7 +206,10 @@ function Header(props) {
                 <Text bold>Account</Text>
                 <ReactiveButton
                   idleText={
-                    <Flex alignItems="center">
+                    <Flex
+                      alignItems="center"
+                      onClick={() => history.push('/login')}
+                    >
                       <Icon
                         icon="clarity:logout-line"
                         color="#f4516c"

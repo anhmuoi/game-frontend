@@ -18,4 +18,9 @@ export const ROUTE = {
 
   // room
   roomManage: '/room-manage',
+  
+  // nft 
+  
+  nft: '/nft',
+  nftMarket: '/nft-market',
 };

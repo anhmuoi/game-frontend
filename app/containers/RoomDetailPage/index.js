@@ -8,6 +8,7 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { makeSelectError, makeSelectLoading } from 'containers/App/selectors';
+import { enqueueSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -26,18 +27,24 @@ import { API_COLUMNS, MQTT_TYPE } from '../../utils/constants.js';
 import { localstoreUtilites } from '../../utils/persistenceData.js';
 import { IoIosLogOut } from 'react-icons/io';
 import happyIcon from 'images/happy.png';
+import { ethers } from 'ethers';
+import multiGameABI from '../../utils/MultiGame.json';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   changePageNumberRoomDetail,
   changePageSizeRoomDetail,
   changeTextField,
   deleteMultiesRoomDetail,
   deleteRoomDetail,
+  getFriendUserId,
   getInitIndexRoomDetail,
   getMeetingLogsById,
   getRoomDetailData,
   getRoomDetailInit,
   getSortDirectionRoomDetailList,
   getSortRoomDetailList,
+  onAddFriend,
   postRoomDetailAdd,
   putRoomDetailUpdate,
 } from './actions.js';
@@ -45,6 +52,7 @@ import messages from './messages.js';
 import './styles.css';
 import {
   getAjaxInfo,
+  getFriendListDataSelector,
   getMeetingLogsDetailSelector,
   getMetaPagingRoomDetail,
   getRoomDetailDataModified,
@@ -55,16 +63,30 @@ import {
 import Header from '../../components/Header/index.js';
 import { create_UUID } from '../../utils/utils.js';
 import WebSocketMqtt from '../../utils/mqtt.js';
-import { Chat, Close, Launch, Notifications, People, Send } from '@material-ui/icons';
+import {
+  Chat,
+  Close,
+  Launch,
+  Notifications,
+  People,
+  Send,
+} from '@material-ui/icons';
 import ModalMaterialUi from 'components/Modal';
 import CountdownTimer from './TimeRemain.js';
 import { card52, power } from '../../images/people/index.js';
 import { isNumber } from 'lodash';
 import CardAnimation from './CardAnimation.js';
 import Winner from './Winner.js';
+import Arena from './Arena.js';
+import {
+  AgreeMess,
+  agreeAddFriend,
+  existItem,
+  notiGetFriend,
+} from '../../utils/translation.js';
 
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
-
+toast.configure();
 const emotionList = [
   { id: 1, label: '❤️' },
   { id: 2, label: '😢' },
@@ -239,6 +261,7 @@ export class RoomDetailInformationPage extends React.Component {
       y: 0,
     },
     winner: null,
+    receiveReward: false,
     openChat: false,
     messages: [
       {
@@ -258,7 +281,64 @@ export class RoomDetailInformationPage extends React.Component {
     showEmojiPicker: false,
     selectedMessageIndex: null,
     unReadChat: false,
+
+    // blockchain
+    provider: null,
+    signer: null,
+    contract: null,
+    gameId: '',
+    entryFee: '',
+    winnerOfGame: '',
+    message: '',
+    inReceiveReward: false,
+    loadingCreateBattle: false,
   };
+
+  handleInputChange(event) {
+    const { name, value } = event.target;
+    this.setState({ [name]: value });
+  }
+
+  async createGame() {
+    const { contract, gameId, entryFee } = this.state;
+    try {
+      const tx = await contract.createGame(
+        gameId,
+        ethers.utils.parseEther(entryFee),
+      );
+      await tx.wait();
+      this.setState({ message: 'Game created successfully!' });
+    } catch (error) {
+      console.error(error);
+      this.setState({ message: 'Error creating game' });
+    }
+  }
+
+  async joinGame() {
+    const { contract, gameId, entryFee } = this.state;
+    try {
+      const tx = await contract.joinGame(gameId, {
+        value: ethers.utils.parseEther(entryFee),
+      });
+      await tx.wait();
+      this.setState({ message: 'Joined game successfully!' });
+    } catch (error) {
+      console.error(error);
+      this.setState({ message: 'Error joining game' });
+    }
+  }
+
+  async declareWinner() {
+    const { contract, gameId, winnerOfGame } = this.state;
+    try {
+      const tx = await contract.declareWinner(gameId, winnerOfGame);
+      await tx.wait();
+      this.setState({ message: 'Winner declared successfully!' });
+    } catch (error) {
+      console.error(error);
+      this.setState({ message: 'Error declaring winner' });
+    }
+  }
 
   componentDidMount() {
     const { roomDetailDataModified, meetingLogsDetailSelector } = this.props;
@@ -273,6 +353,32 @@ export class RoomDetailInformationPage extends React.Component {
       price,
       userListId,
     } = roomDetailDataModified.toJS();
+    if (currentMeetingLogId && currentMeetingLogId.value) {
+      this.setState({
+        gameId: currentMeetingLogId.value + '',
+      });
+      if (meetingLogsDetailSelector === null)
+        this.props.onGetMeetingLogsById(currentMeetingLogId.value);
+    }
+
+    const provider = new ethers.providers.JsonRpcProvider(
+      window.env.REACT_APP_BSC_TESTNET_URL,
+    );
+    const signer = new ethers.Wallet(
+      window.env.REACT_APP_PRIVATE_KEY,
+      provider,
+    );
+    const contract = new ethers.Contract(
+      window.env.REACT_APP_CONTRACT_ADDRESS,
+      multiGameABI,
+      signer,
+    );
+
+    this.setState({ provider, signer, contract });
+
+    this.props.onGetFriendUserId(
+      localstoreUtilites.getUserIdFromLocalStorage(),
+    );
   }
 
   getDataRoomDetailTable(departmentIds, status, search) {
@@ -311,10 +417,6 @@ export class RoomDetailInformationPage extends React.Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     const ajaxSuccess = nextProps.ajaxInfo.toJS();
     if (ajaxSuccess.value) {
-      this.props.enqueueSnackbar(ajaxSuccess.message, {
-        variant: 'success',
-      });
-
       this.onCloseModal();
     }
 
@@ -434,7 +536,8 @@ export class RoomDetailInformationPage extends React.Component {
     if (
       meetingLogsDetailSelector &&
       meetingLogsDetailSelector.userList.length > 0 &&
-      isRunning.value === true
+      isRunning.value === true &&
+      meetingLogsDetailSelector.gamePlay
     ) {
       if (meetingLogsDetailSelector.userList.length === 2) {
         if (player1.id === meetingLogsDetailSelector.gamePlay.currentTurnId) {
@@ -506,13 +609,19 @@ export class RoomDetailInformationPage extends React.Component {
       isRunning,
       currentMeetingLogId,
     } = roomDetailDataModified.toJS();
-
+    if (currentMeetingLogId && currentMeetingLogId.value) {
+      if (meetingLogsDetailSelector === null)
+        this.props.onGetMeetingLogsById(currentMeetingLogId.value);
+    }
     const checkOwnerRoom = userList.find(
       (i) => i.id === Number(localstoreUtilites.getUserIdFromLocalStorage()),
     );
     if (checkOwnerRoom && checkOwnerRoom.ownerRoom === id.value) {
       if (isRunning && isRunning.value) {
-        if (meetingLogsDetailSelector !== null) {
+        if (
+          meetingLogsDetailSelector !== null &&
+          meetingLogsDetailSelector.gamePlay
+        ) {
           console.log(meetingLogsDetailSelector);
           let countCard = [];
           meetingLogsDetailSelector.gamePlay.cardList.map((i) => {
@@ -568,6 +677,7 @@ export class RoomDetailInformationPage extends React.Component {
                 shield: el.shield,
                 nFTList: el.nftList,
                 skillId: el.skillId,
+                isDeposit: true,
               });
             });
 
@@ -664,9 +774,6 @@ export class RoomDetailInformationPage extends React.Component {
           },
           (message) => {
             console.log('connect fail');
-            this.props.enqueueSnackbar(`connect failed: ${message}`, {
-              variant: 'error',
-            });
           },
         );
     }
@@ -700,6 +807,10 @@ export class RoomDetailInformationPage extends React.Component {
               messageQueue.data.room.currentMeetingLogId,
             );
           }
+          if (messageQueue.data.room.isRunning === false) {
+            console.log('out');
+            this.showEndGame(messageQueue.data.action);
+          }
         }
         if (messageQueue.data.action.id === 2) {
           this.props.onGetMeetingLogsById(
@@ -708,11 +819,109 @@ export class RoomDetailInformationPage extends React.Component {
           this.setState({ unReadChat: true });
         }
         if (messageQueue.data.action.id === 4) {
+          this.props.onInitIndexRoomDetail(this.props.match.params.id);
           this.showEndGame(messageQueue.data.action);
+          this.setState({
+            nFTListChoose: [],
+          });
         }
         if (messageQueue.data.action.id === 5) {
-          this.handleStart();
-          console.log('start => modal');
+          // this.handleStart();
+          this.handleCreateBattle(messageQueue.data.room.currentMeetingLogId);
+          this.props.onGetMeetingLogsById(
+            messageQueue.data.room.currentMeetingLogId,
+          );
+        }
+        if (messageQueue.data.action.id === 7) {
+          this.props.onInitIndexRoomDetail(this.props.match.params.id);
+          this.props.onGetMeetingLogsById(
+            messageQueue.data.room.currentMeetingLogId,
+          );
+          this.setState({
+            loadingCreateBattle: false,
+          });
+        }
+        if (messageQueue.data.action.id === 71) {
+          this.props.onInitIndexRoomDetail(this.props.match.params.id);
+        }
+        if (messageQueue.data.action.id === 8) {
+          this.props.onGetMeetingLogsById(
+            messageQueue.data.room.currentMeetingLogId,
+          );
+          if (messageQueue.data.action.depositDone) {
+            this.handleStart();
+          }
+        }
+        if (messageQueue.data.action.id === 9) {
+          this.setState({
+            inReceiveReward: false,
+            winner: null,
+          });
+          this.props.onInitIndexRoomDetail(this.props.match.params.id);
+        }
+        if (messageQueue.data.action.id === 10) {
+          if (
+            Number(localstoreUtilites.getUserIdFromLocalStorage()) ===
+            Number(messageQueue.data.action.userId2)
+          ) {
+            toast.success(
+              <div style={{ color: 'white' }}>
+                {notiGetFriend()}
+                {messageQueue.data.action.userId1Name}
+                <Button
+                  onClick={() =>
+                    this.handleAgreeAddFriend(messageQueue.data.action)
+                  }
+                  style={{
+                    color: 'white',
+                    marginLeft: 15,
+                    background: '#00B5AD',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {AgreeMess()}
+                </Button>
+              </div>,
+              {
+                position: toast.POSITION.TOP_RIGHT,
+                hideProgressBar: false,
+                autoClose: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'dark',
+              },
+            );
+          }
+        }
+        if (messageQueue.data.action.id === 11) {
+          if (
+            Number(localstoreUtilites.getUserIdFromLocalStorage()) ===
+            Number(messageQueue.data.action.userId1)
+          ) {
+            toast.success(
+              <div style={{ color: 'white' }}>
+                {messageQueue.data.action.userId2Name}
+                {agreeAddFriend()}
+              </div>,
+              {
+                position: toast.POSITION.TOP_RIGHT,
+                hideProgressBar: false,
+                autoClose: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'dark',
+              },
+            );
+
+            this.props.onAddFriendUser(
+              messageQueue.data.action.userId1,
+              messageQueue.data.action.userId2,
+            );
+          }
         }
         if (messageQueue.data.messageType === 'error') {
           this.props.onInitIndexRoomDetail(this.props.match.params.id);
@@ -775,7 +984,7 @@ export class RoomDetailInformationPage extends React.Component {
       let el = userList.find((i) => i.id === item);
       dataSend.push({
         id: item,
-        walletAddress: el.userName,
+        walletAddress: el.walletAddress,
         name: el.name,
         avatar: el.avatar,
         indexPlayer: el.indexPlayer,
@@ -784,6 +993,7 @@ export class RoomDetailInformationPage extends React.Component {
         shield: 0,
         nFTList: [],
         skillId: '',
+        isDeposit: false,
       });
     });
 
@@ -809,6 +1019,253 @@ export class RoomDetailInformationPage extends React.Component {
       },
     });
   };
+
+  handleCreateBattle = (gameId) => {
+    this.setState({
+      gameId: gameId + '',
+      loadingCreateBattle: true,
+    });
+  };
+
+  rejectCreateBattle = (gameId) => {
+    const { userList, roomDetailDataModified } = this.props;
+    const { nFTListChoose, dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      currentMeetingLogId,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+    let room = {};
+    if (dataRoomInfo === null) {
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+    } else {
+      room = dataRoomInfo.room;
+    }
+
+    let dataSend = [];
+    userListId.value.map((item) => {
+      let el = userList.find((i) => i.id === item);
+      dataSend.push({
+        id: item,
+        walletAddress: el.walletAddress,
+        name: el.name,
+        avatar: el.avatar,
+        indexPlayer: el.indexPlayer,
+        hp: 100,
+        mana: 100,
+        shield: 0,
+        nFTList: [],
+        skillId: '',
+        isDeposit: false,
+      });
+    });
+
+    dataSend = dataSend.sort((a, b) => a.indexPlayer - b.indexPlayer);
+
+    const msgId = create_UUID();
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 71,
+          userStatus: dataSend,
+          meetingLogId: gameId,
+        },
+      },
+    });
+  };
+  createGameDone = (gameId) => {
+    const { userList, roomDetailDataModified } = this.props;
+    const { nFTListChoose, dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      currentMeetingLogId,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+    let room = {};
+    if (dataRoomInfo === null) {
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+    } else {
+      room = dataRoomInfo.room;
+    }
+
+    let dataSend = [];
+    userListId.value.map((item) => {
+      let el = userList.find((i) => i.id === item);
+      dataSend.push({
+        id: item,
+        walletAddress: el.walletAddress,
+        name: el.name,
+        avatar: el.avatar,
+        indexPlayer: el.indexPlayer,
+        hp: 100,
+        mana: 100,
+        shield: 0,
+        nFTList: [],
+        skillId: '',
+        isDeposit: false,
+      });
+    });
+
+    dataSend = dataSend.sort((a, b) => a.indexPlayer - b.indexPlayer);
+
+    const msgId = create_UUID();
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 7,
+          userStatus: dataSend,
+          meetingLogId: gameId,
+        },
+      },
+    });
+  };
+  depositDone = (gameId) => {
+    const { userList, roomDetailDataModified } = this.props;
+    const { nFTListChoose, dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      currentMeetingLogId,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+    let room = {};
+    if (dataRoomInfo === null) {
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+    } else {
+      room = dataRoomInfo.room;
+    }
+
+    let dataSend = [];
+    userListId.value.map((item) => {
+      let el = userList.find((i) => i.id === item);
+      dataSend.push({
+        id: item,
+        walletAddress: el.walletAddress,
+        name: el.name,
+        avatar: el.avatar,
+        indexPlayer: el.indexPlayer,
+        hp: 100,
+        mana: 100,
+        shield: 0,
+        nFTList: [],
+        skillId: '',
+        isDeposit: true,
+      });
+    });
+
+    dataSend = dataSend.sort((a, b) => a.indexPlayer - b.indexPlayer);
+
+    const msgId = create_UUID();
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 8,
+          userStatus: dataSend.filter(
+            (i) =>
+              i.id === Number(localstoreUtilites.getUserIdFromLocalStorage()),
+          ),
+          meetingLogId: gameId,
+        },
+      },
+    });
+  };
+  doneReceiveReward = (gameId) => {
+    const { userList, roomDetailDataModified } = this.props;
+    const { nFTListChoose, dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      currentMeetingLogId,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+    let room = {};
+    if (dataRoomInfo === null) {
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+    } else {
+      room = dataRoomInfo.room;
+    }
+
+    const msgId = create_UUID();
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 9,
+          meetingLogId: gameId,
+          doneReceiveReward: true,
+        },
+      },
+    });
+  };
   startTheGame = (NFTChoose) => {
     const { userList, roomDetailDataModified } = this.props;
     const { dataRoomInfo } = this.state;
@@ -828,7 +1285,7 @@ export class RoomDetailInformationPage extends React.Component {
       let el = userList.find((i) => i.id === item);
       dataSend.push({
         id: item,
-        walletAddress: el.userName,
+        walletAddress: el.walletAddress,
         name: el.name,
         avatar: el.avatar,
         hp: 100,
@@ -837,6 +1294,7 @@ export class RoomDetailInformationPage extends React.Component {
         indexPlayer: el.indexPlayer,
         nFTList: NFTChoose,
         skillId: '',
+        isDeposit: true,
       });
     });
 
@@ -886,6 +1344,7 @@ export class RoomDetailInformationPage extends React.Component {
       start: true,
     });
   };
+
   closeModalTime = () => {
     const { nFTListChoose } = this.state;
     let newNFT = [];
@@ -936,8 +1395,15 @@ export class RoomDetailInformationPage extends React.Component {
     const { nFTListChoose } = this.state;
     const checkExist = nFTListChoose.find((m) => m.id === nft.id);
     if (checkExist) {
-      this.props.enqueueSnackbar(<FormattedMessage {...messages.existItem} />, {
-        variant: 'error',
+      toast.error(existItem(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
       });
     } else {
       let newNFT = [];
@@ -1068,7 +1534,7 @@ export class RoomDetailInformationPage extends React.Component {
     let shield = 0;
 
     let hpEnemy = 0;
-    let manaEnemy = 0;
+    let manaEnemy = 15;
     let shieldEnemy = 0;
     let skillId = '';
     const cardDetail = cardId.split('-');
@@ -1232,7 +1698,7 @@ export class RoomDetailInformationPage extends React.Component {
           }
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: hpTempCurrent,
@@ -1241,6 +1707,7 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: NFTChoose,
             skillId: skillId,
+            isDeposit: true,
           });
         } else if (el.id === nextTurnId) {
           let hpTempNext = el.hp + hpEnemy;
@@ -1267,7 +1734,7 @@ export class RoomDetailInformationPage extends React.Component {
           }
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: hpTempNext,
@@ -1276,11 +1743,12 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: player2.nftList,
             skillId: '',
+            isDeposit: true,
           });
         } else {
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: el.hp,
@@ -1289,6 +1757,7 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: item === player3.id ? player3.nftList : player4.nftList,
             skillId: '',
+            isDeposit: true,
           });
         }
       });
@@ -1394,7 +1863,7 @@ export class RoomDetailInformationPage extends React.Component {
           console.log(hpTempCurrent, manaTempCurrent, shieldTempCurrent);
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: hpTempCurrent,
@@ -1403,6 +1872,7 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: NFTChoose,
             skillId: skillId,
+            isDeposit: true,
           });
         } else if (el.id === nextTurnId) {
           let hpTempNext = el.hp + hpEnemy;
@@ -1430,7 +1900,7 @@ export class RoomDetailInformationPage extends React.Component {
           console.log(hpTempNext, manaTempNext, shieldTempNext);
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: hpTempNext,
@@ -1439,11 +1909,12 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: player2.nftList,
             skillId: el.skillId,
+            isDeposit: true,
           });
         } else {
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: el.hp,
@@ -1452,6 +1923,7 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: item === player3.id ? player3.nftList : player4.nftList,
             skillId: el.skillId,
+            isDeposit: true,
           });
         }
       });
@@ -1550,10 +2022,13 @@ export class RoomDetailInformationPage extends React.Component {
     const winPlayer = data.userStatus.find(
       (i) => i.id === data.gamePlay.orderWinning[0],
     );
-    console.log(data);
-    this.setState({
-      winner: winPlayer,
-    });
+    console.log(winPlayer);
+    if (winPlayer) {
+      this.setState({
+        winner: winPlayer,
+        inReceiveReward: true,
+      });
+    }
   };
 
   handleTimeUpPlayer = () => {
@@ -1591,7 +2066,7 @@ export class RoomDetailInformationPage extends React.Component {
       let shield = 0;
 
       let hpEnemy = 0;
-      let manaEnemy = 0;
+      let manaEnemy = 15;
       let shieldEnemy = 0;
       let skillId = '';
 
@@ -1629,7 +2104,7 @@ export class RoomDetailInformationPage extends React.Component {
 
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: hpTempCurrent,
@@ -1638,6 +2113,7 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: NFTChoose,
             skillId: skillId,
+            isDeposit: true,
           });
         } else if (el.id === nextTurnId) {
           let hpTempNext = el.hp + hpEnemy;
@@ -1664,7 +2140,7 @@ export class RoomDetailInformationPage extends React.Component {
           }
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: hpTempNext,
@@ -1673,11 +2149,12 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: player2.nftList,
             skillId: el.skillId,
+            isDeposit: true,
           });
         } else {
           dataSend.push({
             id: item,
-            walletAddress: el.userName,
+            walletAddress: el.walletAddress,
             name: el.name,
             avatar: el.avatar,
             hp: el.hp,
@@ -1686,6 +2163,7 @@ export class RoomDetailInformationPage extends React.Component {
             indexPlayer: el.indexPlayer,
             nFTList: item === player3.id ? player3.nftList : player4.nftList,
             skillId: el.skillId,
+            isDeposit: true,
           });
         }
       });
@@ -1776,7 +2254,7 @@ export class RoomDetailInformationPage extends React.Component {
     });
   };
 
-  handleInputChange = (e) => {
+  handleInputChatChange = (e) => {
     this.setState({ newMessage: e.target.value });
   };
 
@@ -2059,12 +2537,114 @@ export class RoomDetailInformationPage extends React.Component {
         userId: localstoreUtilites.getUserIdFromLocalStorage(),
         action: {
           id: 1,
-          meetingLogId: meetingLogsDetailSelector.id,
+          // meetingLogId: meetingLogsDetailSelector.id,
+          gamePlay: {
+            orderWinning: [],
+          },
         },
       },
     });
     window.location.href = `${window.location.origin}/room-game`;
   };
+
+  handleAddFriend = (user2) => {
+    const { roomDetailDataModified, userList } = this.props;
+    const { dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+
+    const msgId = create_UUID();
+
+    let room = {};
+    if (dataRoomInfo === null) {
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+    } else {
+      room = dataRoomInfo.room;
+    }
+
+    const user1 = userList.find(
+      (i) =>
+        Number(i.id) === Number(localstoreUtilites.getUserIdFromLocalStorage()),
+    );
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 10,
+          userId1: user1.id,
+          userId1Name: user1.name,
+          userId2: user2.id,
+          userId2Name: user2.name,
+        },
+      },
+    });
+  };
+  handleAgreeAddFriend = (action) => {
+    const { roomDetailDataModified, userList } = this.props;
+    const { dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+
+    const msgId = create_UUID();
+
+    let room = {};
+    if (dataRoomInfo === null) {
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+    } else {
+      room = dataRoomInfo.room;
+    }
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 11,
+          userId1: action.userId1,
+          userId1Name: action.userId1Name,
+          userId2: action.userId2,
+          userId2Name: action.userId2Name,
+        },
+      },
+    });
+  };
+
   render() {
     const {
       roomDetailIdSelected,
@@ -2085,6 +2665,8 @@ export class RoomDetailInformationPage extends React.Component {
       idNFTTemp,
       winner,
       openChat,
+      inReceiveReward,
+      loadingCreateBattle,
     } = this.state;
     const {
       onUpdateRoomDetail,
@@ -2101,8 +2683,18 @@ export class RoomDetailInformationPage extends React.Component {
       userList,
       classes,
       meetingLogsDetailSelector,
+      friendListDataSelector,
     } = this.props;
-    const { newMessage, showEmojiPicker, unReadChat } = this.state;
+    const {
+      newMessage,
+      showEmojiPicker,
+      unReadChat,
+      provider,
+      signer,
+      contract,
+      gameId,
+    } = this.state;
+    console.log(friendListDataSelector);
     const {
       id,
       name,
@@ -2310,7 +2902,7 @@ export class RoomDetailInformationPage extends React.Component {
             <input
               type="text"
               value={newMessage}
-              onChange={this.handleInputChange}
+              onChange={this.handleInputChatChange}
               onKeyDown={this.handleKeyDown}
               placeholder="Type a message"
               style={{
@@ -2370,11 +2962,20 @@ export class RoomDetailInformationPage extends React.Component {
                     background: '#00B5AD',
                     color: 'white',
                     cursor: 'pointer',
+                    zIndex: openChat ? 0 : 1000,
                   }}
                 >
                   <Chat fontSize="inherit" />
                   {unReadChat === true ? (
-                    <div style={{position: 'absolute', top: 0, right: 0, transform: 'translate(25%,-40%)', color: 'red'}}>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        transform: 'translate(25%,-40%)',
+                        color: 'red',
+                      }}
+                    >
                       <Notifications />
                     </div>
                   ) : null}
@@ -2410,10 +3011,18 @@ export class RoomDetailInformationPage extends React.Component {
           isOpenModal={winner !== null ? true : false}
         >
           <Winner
+            doneReceiveReward={(gameId) => this.doneReceiveReward(gameId)}
+            gameId={gameId}
+            handleReceiveReward={() => this.handleReceiveReward()}
+            closeShowWinner={() => this.setState({ winner: null })}
             winner={
               winner !== null
                 ? winner
-                : { name: '', hp: '', image: 'https://via.placeholder.com/150' }
+                : {
+                    name: '',
+                    hp: '',
+                    avatar: 'https://via.placeholder.com/150',
+                  }
             }
           />
         </ModalMaterialUi>
@@ -2494,7 +3103,7 @@ export class RoomDetailInformationPage extends React.Component {
           src={battlegrounds[0].image}
           alt=""
         /> */}
-        <Header loginByAddress={() => null} />
+        <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
         </div>
@@ -2507,7 +3116,8 @@ export class RoomDetailInformationPage extends React.Component {
           <Typography
             style={{ fontWeight: 'bold', fontSize: 10, color: 'white' }}
           >
-            Price:&nbsp; {price.value}TBNB
+            <FormattedMessage {...messages.price} />
+            :&nbsp; {price.value}TBNB
           </Typography>
           <Typography
             style={{ fontWeight: 'bold', fontSize: 10, color: 'white' }}
@@ -2519,6 +3129,7 @@ export class RoomDetailInformationPage extends React.Component {
         {isRunning.value ? (
           <div className="game-play">
             {meetingLogsDetailSelector &&
+            meetingLogsDetailSelector.gamePlay &&
             meetingLogsDetailSelector.userList.length == 2 ? (
               <div
                 style={{
@@ -2626,7 +3237,8 @@ export class RoomDetailInformationPage extends React.Component {
                         onClick={() => {
                           if (
                             isClickCard === false &&
-                            permissionTurn === true
+                            permissionTurn === true &&
+                            card.choose === false
                           ) {
                             this.clickCard(card.id);
                           }
@@ -3409,41 +4021,30 @@ export class RoomDetailInformationPage extends React.Component {
             ) : null}
           </div>
         ) : (
-          <React.Fragment>
-            <div className="room-detail-list">
-              {userListId.value.map((p, key) => (
-                <div key={key} className="room-detail-person">
-                  <img
-                    className="room-detail-avatar"
-                    src={
-                      userList.find((i) => i.id === p)
-                        ? userList.find((i) => i.id === p).avatar
-                        : ''
-                    }
-                    alt=""
-                  />
-                  <p>
-                    {userList.find((i) => i.id === p)
-                      ? userList.find((i) => i.id === p).userName
-                      : ''}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="room-detail-start">
-              {checkOwnerRoom ? (
-                <Button
-                  variant="contained"
-                  onClick={() => this.pushStartFirst()}
-                  // disabled={currentPeople.value === totalPeople.value ? false : true}
-                  color="white"
-                  style={{ background: '#00B5AD', color: 'white' }}
-                >
-                  Start
-                </Button>
-              ) : null}
-            </div>
-          </React.Fragment>
+          <Arena
+            friendListDataSelector={friendListDataSelector}
+            handleAddFriend={(user2) => this.handleAddFriend(user2)}
+            loadingCreateBattle={loadingCreateBattle}
+            setLoadingCreateBattle={(value) =>
+              this.setState({ loadingCreateBattle: value })
+            }
+            handleRejectCreateBattle={(gameId) =>
+              this.rejectCreateBattle(gameId)
+            }
+            handleCreateBattle={() => this.pushStartFirst()}
+            userList={userList}
+            userListId={userListId}
+            checkOwnerRoom={checkOwnerRoom}
+            gameId={gameId}
+            roomDetailDataModified={roomDetailDataModified.toJS()}
+            contract={contract}
+            signer={signer}
+            provider={provider}
+            createGameDone={(gameId) => this.createGameDone(gameId)}
+            meetingLogsDetailSelector={meetingLogsDetailSelector}
+            depositDone={(user) => this.depositDone(user)}
+            inReceiveReward={inReceiveReward}
+          />
         )}
 
         <div className="room-game-list"></div>
@@ -3472,6 +4073,9 @@ RoomDetailInformationPage.propTypes = {
   onGetSortColumn: PropTypes.func,
   onGetSortDirection: PropTypes.func,
   onGetMeetingLogsById: PropTypes.func,
+  friendListDataSelector: PropTypes.array,
+  onGetFriendUserId: PropTypes.func,
+  onAddFriendUser: PropTypes.func,
 
   loading: PropTypes.bool,
   history: PropTypes.object,
@@ -3508,6 +4112,11 @@ function mapDispatchToProps(dispatch) {
 
     // meeting logs
     onGetMeetingLogsById: (id) => dispatch(getMeetingLogsById(id)),
+
+    // friend
+    onGetFriendUserId: (userId) => dispatch(getFriendUserId(userId)),
+    onAddFriendUser: (userId1, userId2) =>
+      dispatch(onAddFriend(userId1, userId2)),
   };
 }
 
@@ -3521,6 +4130,7 @@ const mapStateToProps = createStructuredSelector({
   userList: getUserListData(),
   roomDetailDataModified: getRoomDetailDataModified(),
   meetingLogsDetailSelector: getMeetingLogsDetailSelector(),
+  friendListDataSelector: getFriendListDataSelector(),
 });
 
 const withReducer = injectReducer({ key: 'roomDetail', reducer });

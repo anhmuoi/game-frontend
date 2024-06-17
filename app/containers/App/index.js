@@ -18,6 +18,7 @@ import { FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import ResetPassword from 'containers/ResetPasswordPage/Loadable';
+import JoinGroup from 'containers/JoinGroupPage/Loadable';
 import Game from 'containers/GamePage/Loadable';
 import { LoadRoleSettingPage } from 'containers/RoleSetting/Loadable';
 import { PAGE_TITLE } from '../../utils/constants';
@@ -47,6 +48,15 @@ import { ProfilePage } from 'containers/ProfilePage/Loadable';
 import { LoadDashboardPage } from 'containers/Dashboard/Loadable';
 import { LoadFolderLogPage } from '../FolderLogPage/Loadable.js';
 import { DailyReportPage } from '../DailyReportPage/Loadable.js';
+import { ItemNftPage } from '../NftPage/Loadable.js';
+import { LoadMarketPage } from '../MarketPage/Loadable.js';
+import { LoadMyNftPage } from '../MyItemNft/Loadable.js';
+import { LoadFriendPage } from '../Friend/Loadable.js';
+import { LoadGroupUserPage } from '../GroupUser/Loadable.js';
+import { LoadAnalysisPage } from '../Analysis/Loadable.js';
+import { LoadRankPage } from '../Rank/Loadable.js';
+import { LoadHistoryPage } from '../History/Loadable.js';
+import { LoadMyGroupPage } from '../MyGroup/Loadable.js';
 const AppWrapper = styled.div`
   margin: 0 auto;
   display: flex;
@@ -78,7 +88,7 @@ export default function App() {
           <AppWrapper>
             <Helmet
               titleTemplate={`%s - ${PAGE_TITLE}`}
-              defaultTitle="ERP Project"
+              defaultTitle="Game Project"
             >
               <meta name="description" content="WaitingKiosk" />
             </Helmet>
@@ -88,6 +98,11 @@ export default function App() {
                 exact
                 path="/reset-password/:codeHash"
                 component={ResetPassword}
+              />
+              <Route
+                exact
+                path="/join-group/:userIdRequest/:departmentId/:codeHash"
+                component={JoinGroup}
               />
               <Route exact path="/game" component={Game} />
               <PrivateRoute
@@ -110,6 +125,14 @@ export default function App() {
               />
               {/* room game */}
               <Route exact path="/room-game" component={LoadRoomGamePage} />
+              <Route exact path="/market" component={LoadMarketPage} />
+              <Route exact path="/my-nft" component={LoadMyNftPage} />
+              <Route exact path="/friend" component={LoadFriendPage} />
+              <Route exact path="/group" component={LoadGroupUserPage} />
+              <Route exact path="/analysis" component={LoadAnalysisPage} />
+              <Route exact path="/rank" component={LoadRankPage} />
+              <Route exact path="/history" component={LoadHistoryPage} />
+              <Route exact path="/my-group" component={LoadMyGroupPage} />
               <Route
                 exact
                 path="/room-game/:id"
@@ -207,6 +230,12 @@ export default function App() {
                 path="/daily-report"
                 component={DailyReportPage}
                 title={messages.titleDailyReport}
+              />
+              <PrivateRoute
+                exact
+                path="/nft"
+                component={ItemNftPage}
+                title={messages.titleNFT}
               />
             </Switch>
           </AppWrapper>

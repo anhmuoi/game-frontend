@@ -57,7 +57,6 @@ export const initialState = fromJS({
     recordsFiltered: 1,
     sortDirection: 'desc',
     sortColumn: 'Name',
-    cloneSortColumn: 0,
     orderBy: '',
     pageNumber: 1,
     pageSize: 25,
