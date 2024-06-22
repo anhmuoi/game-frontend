@@ -52,7 +52,7 @@ export function getMeta(meta, departmentIds, status, search) {
     pageSize: 100,
   };
   const metaPaging = meta ? meta.toJSON() : metaMarket;
-  return `${URL_DOMAIN}/item-nft-users?getAll=true${
+  return `${URL_DOMAIN}/item-nft-users?getAll=true&status=0&status=1${
     search ? `&search=${search.trim()}` : ''
   }${userId ? `&userId=${Number(userId)}` : ''}`;
 }

@@ -12,6 +12,8 @@ const getMarketDataSelector = () =>
 
 const getstoreListData = () =>
   createSelector(selectMarket, (marketState) => marketState.get('storeList'));
+const getUserListData = () =>
+  createSelector(selectMarket, (marketState) => marketState.get('userList'));
 
 const getMarketDataModified = () =>
   createSelector(selectMarket, (marketState) => marketState.get('marketModel'));
@@ -32,4 +34,5 @@ export {
   getRidirectInfo,
   getMetaPagingMarket,
   getstoreListData,
+  getUserListData,
 };

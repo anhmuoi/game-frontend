@@ -122,6 +122,18 @@ export default defineMessages({
     id: `${scope}.unanalysis`,
     defaultMessage: `Unanalysis`,
   },
+  balanceFluctuations: {
+    id: `${scope}.balanceFluctuations`,
+    defaultMessage: `Balance fluctuations`,
+  },
+  latest7days: {
+    id: `${scope}.latest7days`,
+    defaultMessage: `Latest 7days`,
+  },
+  latest30days: {
+    id: `${scope}.latest30days`,
+    defaultMessage: `Latest 30days`,
+  },
 
 
   system: {

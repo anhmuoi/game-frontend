@@ -41,6 +41,7 @@ import {
   getSortMarketList,
   postMarketAdd,
   putMarketUpdate,
+  getBalanceChart,
 } from './actions.js';
 import messages from './messages.js';
 import './styles.css';
@@ -51,6 +52,7 @@ import {
   getMarketDataSelector,
   getstoreListData,
   getUserListData,
+  getBalanceChartSelector,
 } from './selectors.js';
 import Header from '../../components/Header/index.js';
 import { create_UUID } from '../../utils/utils.js';
@@ -95,16 +97,23 @@ export class MarketInformationPage extends React.Component {
     statusFilter: [],
     departmentsIdFilter: [],
     openMenu: false,
-    collapse: false,
+    collapse: true,
     toggle: false,
     openModalSell: false,
     itemSellSelected: null,
     priceSell: 0,
+
+    last7day: true,
   };
 
   componentDidMount() {
     this.getDataMarketTable([], [], null);
     this.props.getMarketInit();
+    this.props.onGetBalanceChart(
+      localstoreUtilites.getUserIdFromLocalStorage(),
+      new Date(new Date().setDate(new Date().getDate() - 7)),
+      new Date(new Date().setDate(new Date().getDate() + 1)),
+    );
   }
 
   getDataMarketTable(departmentIds, status, search) {
@@ -339,6 +348,28 @@ export class MarketInformationPage extends React.Component {
     return newData;
   };
 
+  handleGetBalanceChart = (day) => {
+    if (day === 7) {
+      this.setState({
+        last7day: true,
+      });
+      this.props.onGetBalanceChart(
+        localstoreUtilites.getUserIdFromLocalStorage(),
+        new Date(new Date().setDate(new Date().getDate() - 7)),
+        new Date(new Date().setDate(new Date().getDate() + 1)),
+      );
+    } else {
+      this.setState({
+        last7day: false,
+      });
+      this.props.onGetBalanceChart(
+        localstoreUtilites.getUserIdFromLocalStorage(),
+        new Date(new Date().setDate(new Date().getDate() - 30)),
+        new Date(new Date().setDate(new Date().getDate() + 1)),
+      );
+    }
+  };
+
   render() {
     const {
       analysisIdSelected,
@@ -350,6 +381,7 @@ export class MarketInformationPage extends React.Component {
       openModalSell,
       itemSellSelected,
       priceSell,
+      last7day,
     } = this.state;
     const {
       onUpdateMarket,
@@ -365,6 +397,7 @@ export class MarketInformationPage extends React.Component {
       storeList,
       classes,
       userList,
+      balanceChartSelector,
     } = this.props;
     const {
       address,
@@ -379,7 +412,6 @@ export class MarketInformationPage extends React.Component {
       userId,
     } = analysisDataModified.toJS();
 
-    console.log(userList);
     let user = null;
     if (userList && userList.length > 0) {
       user = userList.find(
@@ -446,7 +478,7 @@ export class MarketInformationPage extends React.Component {
           src={battlegrounds[0].image}
           alt=""
         /> */}
-        <Header loginByAddress={() => null} history={history}/>
+        <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
         </div>
@@ -475,11 +507,32 @@ export class MarketInformationPage extends React.Component {
             </p>
           </div>
         ) : null}
+        <Typography
+          variant="h5"
+          style={{ color: 'white', textAlign: 'center', marginTop: 20 }}
+        >
+          <FormattedMessage {...messages.balanceFluctuations} />
+        </Typography>
+
+        <div className="filter">
+          <div
+            onClick={() => this.handleGetBalanceChart(7)}
+            className={`filter-date ${last7day ? 'filter-date-active' : ''}`}
+          >
+            <FormattedMessage {...messages.latest7days} />
+          </div>
+          <div
+            onClick={() => this.handleGetBalanceChart(30)}
+            className={`filter-date ${!last7day ? 'filter-date-active' : ''}`}
+          >
+            <FormattedMessage {...messages.latest30days} />
+          </div>
+        </div>
         <div
           className="room-game-list"
-          style={{ marginTop: 80, justifyContent: 'center' }}
+          style={{ marginTop: 20, justifyContent: 'center' }}
         >
-          <LineChart />
+          <LineChart chartData={balanceChartSelector} />
         </div>
       </div>
     );
@@ -505,9 +558,11 @@ MarketInformationPage.propTypes = {
   onChangeTextField: PropTypes.func,
   onGetSortColumn: PropTypes.func,
   onGetSortDirection: PropTypes.func,
+  onGetBalanceChart: PropTypes.func,
 
   loading: PropTypes.bool,
   history: PropTypes.object,
+  balanceChartSelector: PropTypes.array,
 };
 
 function mapDispatchToProps(dispatch) {
@@ -536,6 +591,9 @@ function mapDispatchToProps(dispatch) {
     onGetSortColumn: (sortColumn, cloneSortColumn) =>
       dispatch(getSortMarketList(sortColumn, cloneSortColumn)),
     onGetSortDirection: () => dispatch(getSortDirectionMarketList()),
+
+    onGetBalanceChart: (userId, startDate, endDate) =>
+      dispatch(getBalanceChart(userId, startDate, endDate)),
   };
 }
 
@@ -548,6 +606,8 @@ const mapStateToProps = createStructuredSelector({
   storeList: getstoreListData(),
   analysisDataModified: getMarketDataModified(),
   userList: getUserListData(),
+
+  balanceChartSelector: getBalanceChartSelector(),
 });
 
 const withReducer = injectReducer({ key: 'analysis', reducer });

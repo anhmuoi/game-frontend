@@ -29,6 +29,8 @@ import imgAttack from 'images/people/attack.png';
 import { FormattedMessage } from 'react-intl';
 import { API_COLUMNS, MQTT_TYPE } from '../../utils/constants.js';
 import { localstoreUtilites } from '../../utils/persistenceData.js';
+import imgbnb from 'images/bnb.svg';
+
 import {
   changePageNumberMarket,
   changePageSizeMarket,
@@ -60,6 +62,7 @@ import { Close, Menu, NoteAddOutlined } from '@material-ui/icons';
 import Sidebar from './Sidebar.js';
 import { mapModelMarketUiToApi } from './functions.js';
 import { LineChart } from './LineChart.js';
+import { ethers } from 'ethers';
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
 
 export const headers = [
@@ -101,11 +104,29 @@ export class MarketInformationPage extends React.Component {
     openModalSell: false,
     itemSellSelected: null,
     priceSell: 0,
+
+    account: null,
+    provider: null,
+    balance: 0,
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     this.getDataMarketTable([], [], null);
     this.props.getMarketInit();
+
+    const provider = new ethers.providers.JsonRpcProvider(
+      window.env.REACT_APP_BSC_TESTNET_URL,
+    );
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    });
+    const balance = await provider.getBalance(accounts[0]);
+
+    this.setState({
+      provider,
+      account: accounts[0],
+      balance: ethers.utils.formatEther(balance),
+    });
   }
 
   getDataMarketTable(departmentIds, status, search) {
@@ -347,6 +368,7 @@ export class MarketInformationPage extends React.Component {
       openModalSell,
       itemSellSelected,
       priceSell,
+      balance,
     } = this.state;
     const {
       onUpdateMarket,
@@ -376,12 +398,23 @@ export class MarketInformationPage extends React.Component {
       userId,
     } = rankDataModified.toJS();
 
-    console.log(userList);
     let user = null;
     if (userList && userList.length > 0) {
       user = userList.find(
         (i) => i.id === Number(localstoreUtilites.getUserIdFromLocalStorage()),
       );
+    }
+
+    let dataRank = [];
+
+    if (userList && userList.length > 0) {
+      userList.map((i) => {
+        if (i.id !== 1) {
+          dataRank.push({ ...i, point: i.totalWin - i.totalLose });
+        }
+      });
+
+      dataRank = dataRank.sort((a, b) => b.point - a.point);
     }
 
     return (
@@ -443,36 +476,19 @@ export class MarketInformationPage extends React.Component {
           src={battlegrounds[0].image}
           alt=""
         /> */}
-        <Header loginByAddress={() => null} history={history}/>
+        <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
         </div>
 
         <Typography
-          variant="h3"
+          variant="h4"
           style={{ color: 'white', textAlign: 'center', marginTop: 20 }}
         >
           <FormattedMessage {...messages.rank} />
         </Typography>
-        {user ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 10,
-              alignItems: 'center',
-            }}
-          >
-            <img
-              src={user.avatar}
-              style={{ width: 50, height: 50, borderRadius: '100%' }}
-            />
-            <p style={{ color: 'white', fontWeight: 'bold', fontSize: 25 }}>
-              {user.name}
-            </p>
-          </div>
-        ) : null}
-        {userList.length > 0 ? (
+
+        {dataRank.length > 0 && user ? (
           <React.Fragment>
             <div
               className="room-game-list"
@@ -492,14 +508,21 @@ export class MarketInformationPage extends React.Component {
                   <Icon icon="noto-v1:star" fontSize="50px" />
                 </div>
                 <img
-                  src={userList[1].avatar}
-                  style={{ width: 200, height: 200, borderRadius: '100%' }}
+                  src={dataRank[0].avatar}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    borderRadius: '100%',
+                    boxShadow: '0 0 10px 5px rgba(255, 255, 255, 0.5)',
+                  }}
                 />
                 <div style={{ color: 'white', fontWeight: 'bold' }}>
-                  {userList[1].name}
+                  {dataRank[0].name}
                 </div>
                 <div style={{ color: 'white', fontWeight: 'bold' }}>
-                  <FormattedMessage {...messages.win} />: 10, <FormattedMessage {...messages.lose} />: 0
+                  <FormattedMessage {...messages.win} />: {dataRank[0].totalWin}
+                  , <FormattedMessage {...messages.lose} />:{' '}
+                  {dataRank[0].totalLose}
                 </div>
               </div>
             </div>
@@ -507,8 +530,8 @@ export class MarketInformationPage extends React.Component {
               style={{
                 display: 'flex',
                 justifyContent: 'center',
-                gap: 40,
-                marginTop: 40,
+                gap: 300,
+                marginTop: -40,
               }}
             >
               <div
@@ -526,14 +549,21 @@ export class MarketInformationPage extends React.Component {
                   <Icon icon="openmoji:star" fontSize="30px" />
                 </div>
                 <img
-                  src={userList[2].avatar}
-                  style={{ width: 170, height: 170, borderRadius: '100%' }}
+                  src={dataRank[1].avatar}
+                  style={{
+                    width: 170,
+                    height: 170,
+                    borderRadius: '100%',
+                    boxShadow: '0 0 10px 5px rgba(255, 255, 255, 0.5)',
+                  }}
                 />
                 <div style={{ color: 'white', fontWeight: 'bold' }}>
-                  {userList[2].name}
+                  {dataRank[1].name}
                 </div>
                 <div style={{ color: 'white', fontWeight: 'bold' }}>
-                  <FormattedMessage {...messages.win} />: 10, <FormattedMessage {...messages.lose} />: 5
+                  <FormattedMessage {...messages.win} />: {dataRank[1].totalWin}
+                  , <FormattedMessage {...messages.lose} />:{' '}
+                  {dataRank[1].totalLose}
                 </div>
               </div>
               <div
@@ -564,12 +594,65 @@ export class MarketInformationPage extends React.Component {
                   />
                 </div>
                 <img
-                  src={top3}
-                  style={{ width: 170, height: 170, borderRadius: '100%' }}
+                  src={dataRank[2].avatar}
+                  style={{
+                    width: 170,
+                    height: 170,
+                    borderRadius: '100%',
+                    boxShadow: '0 0 10px 5px rgba(255, 255, 255, 0.5)',
+                  }}
                 />
-                <div style={{ color: 'white', fontWeight: 'bold' }}>Danny</div>
                 <div style={{ color: 'white', fontWeight: 'bold' }}>
-                  <FormattedMessage {...messages.win} />: 5, <FormattedMessage {...messages.lose} />: 5
+                  {dataRank[2].name}
+                </div>
+                <div style={{ color: 'white', fontWeight: 'bold' }}>
+                  <FormattedMessage {...messages.win} />: {dataRank[2].totalWin}
+                  , <FormattedMessage {...messages.lose} />:{' '}
+                  {dataRank[2].totalLose}
+                </div>
+              </div>
+            </div>
+
+            <div className="your-rank">
+              <div className="your-rank-title">
+                <FormattedMessage {...messages.yourRank} />
+              </div>
+              <div className="your-rank-content">
+                <div className="your-rank-content-order">
+                  {dataRank.findIndex(
+                    (m) =>
+                      m.id ===
+                      Number(localstoreUtilites.getUserIdFromLocalStorage()),
+                  ) +
+                    1 +
+                    '/' +
+                    dataRank.length}
+                </div>
+                <div className="your-rank-content-point">
+                  <FormattedMessage {...messages.win} />: {user.totalWin}
+                  , <FormattedMessage {...messages.lose} />: {user.totalLose}
+                </div>
+              </div>
+            </div>
+            <div className="your-rank" style={{ left: 100 }}>
+              <div className="your-rank-title">
+                <FormattedMessage {...messages.yourBalance} />
+              </div>
+              <div className="your-rank-content">
+                <div
+                  className="your-rank-content-order"
+                  style={{ fontSize: 70, height: '100%' }}
+                >
+                  {Number(balance).toLocaleString()}
+                  <img
+                    src={imgbnb}
+                    style={{
+                      width: 70,
+                      height: 70,
+                      boxShadow: 'rgb(231, 197, 38) 0px 0px 15px 0px',
+                      borderRadius: '100%',
+                    }}
+                  />
                 </div>
               </div>
             </div>

@@ -33,6 +33,7 @@ import {
   UPDATE_AVATAR,
   SET_STORE_LIST_WAITING,
   SET_USER_ANALYSIS,
+  GET_BALANCE_CHART_SUCCESS,
 } from './constants.js';
 import { mergeMetaPaging, mergeState } from './functions.js';
 
@@ -55,6 +56,7 @@ export const initialState = fromJS({
 
   storeList: [],
   userList: [],
+  balanceChart: [],
 
   ajaxSuccess: { value: false, message: '' },
   isRedirect: { value: false, route: '' },
@@ -86,6 +88,8 @@ function analysisReducer(state = initialState, action) {
       return state.set('storeList', action.storeList);
     case SET_USER_ANALYSIS:
       return state.set('userList', action.userList);
+    case GET_BALANCE_CHART_SUCCESS:
+      return state.set('balanceChart', action.balanceChart);
     case DELETE_MULTIES_ANALYSIS_SUCCESS:
     case DELETE_ANALYSIS_SUCCESS:
     case UPDATE_ANALYSIS_SUCCESS:

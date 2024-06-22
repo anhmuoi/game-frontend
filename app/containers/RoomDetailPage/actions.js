@@ -51,6 +51,13 @@ import {
   GET_FRiEND_BY_USERID_SUCCESS,
   ON_ADD_FRIEND,
   ON_ADD_FRIEND_SUCCESS,
+  UPDATE_BALANCE,
+  GET_ITEM_NFT_SUCCESS,
+  GET_ITEM_NFT,
+  PUT_USE_ITEM,
+  POST_ASSIGN_ITEM,
+  GET_ITEM_LIST_SYSTEM_SUCCESS,
+  GET_ITEM_LIST_SYSTEM,
 } from './constants';
 
 /**
@@ -346,5 +353,46 @@ export function onAddFriendSuccess(message) {
   return {
     type: ON_ADD_FRIEND_SUCCESS,
     message,
+  };
+}
+export function updateBalance(userId, balance) {
+  return {
+    type: UPDATE_BALANCE,
+    userId,
+    balance,
+  };
+}
+export function getItemNft() {
+  return {
+    type: GET_ITEM_NFT,
+  };
+}
+export function getItemNftSuccess(itemNftUser) {
+  return {
+    type: GET_ITEM_NFT_SUCCESS,
+    itemNftUser,
+  };
+}
+export function putUseItemNFT(idItemList) {
+  return {
+    type: PUT_USE_ITEM,
+    idItemList,
+  };
+}
+export function postAssignItemNFT(idItemNftId) {
+  return {
+    type: POST_ASSIGN_ITEM,
+    idItemNftId,
+  };
+}
+export function getItemListSystem() {
+  return {
+    type: GET_ITEM_LIST_SYSTEM,
+  };
+}
+export function setItemListSystem(itemListSystem) {
+  return {
+    type: GET_ITEM_LIST_SYSTEM_SUCCESS,
+    itemListSystem,
   };
 }

@@ -171,10 +171,13 @@ export function* getInitIndexRoomGame(action) {
       const data = {
         name: '',
         isRunning: false,
+        default: false,
         description: '',
+        passwordRoom: '',
         totalPeople: 0,
         currentPeople: 0,
         price: 0,
+        userListId: [],
       };
       yield put(getInitIndexRoomGameSuccess(mapModelRoomGameApiToUI(data)));
       yield put(loadSuccess());

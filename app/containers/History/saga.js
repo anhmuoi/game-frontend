@@ -47,14 +47,18 @@ export function getMeta(meta, departmentIds, status, search) {
     recordsTotal: 1,
     recordsFiltered: 1,
     sortDirection: 'desc',
-    orderBy: '',
+    orderBy: 'CreatedOn',
     pageNumber: 1,
-    pageSize: 100,
+    pageSize: 10,
   };
   const metaPaging = meta ? meta.toJSON() : metaMarket;
-  return `${URL_DOMAIN}/meeting-logs?getAll=true${
-    search ? `&search=${search.trim()}` : ''
-  }${userId ? `&userId=${Number(userId)}` : ''}`;
+  return `${URL_DOMAIN}/meeting-logs?pageNumber=${
+    metaPaging.pageNumber
+  }&pageSize=${metaPaging.pageSize}&sortColumn=${
+    metaPaging.sortColumn
+  }&sortDirection=${metaPaging.sortDirection}${
+    userId ? `&userId=${Number(userId)}` : ''
+  }`;
 }
 
 export function* getMarketData(action) {

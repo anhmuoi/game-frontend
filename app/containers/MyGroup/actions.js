@@ -51,6 +51,7 @@ import {
   DELETE_MULTIES_FRIEND_SUCCESS,
   USER_OUT_GROUP_SUCCESS,
   USER_OUT_GROUP,
+  REQUEST_ADD_FRIEND,
 } from './constants';
 
 /**
@@ -353,5 +354,12 @@ export function userOutGroupSuccess(message, ids) {
     type: USER_OUT_GROUP_SUCCESS,
     message,
     ids,
+  };
+}
+export function requestAddFriend(userId1, userId2) {
+  return {
+    type: REQUEST_ADD_FRIEND,
+    userId1,
+    userId2,
   };
 }

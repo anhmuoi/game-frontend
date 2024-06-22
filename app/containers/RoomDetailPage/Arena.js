@@ -28,6 +28,7 @@ const Arena = ({
   setLoadingCreateBattle,
   friendListDataSelector,
   handleAddFriend,
+  
 }) => {
   const {
     account,
@@ -62,19 +63,17 @@ const Arena = ({
         signer,
       );
 
-      const tx = await contract.createGame(
-        gameId,
-        ethers.utils.parseEther(roomDetailDataModified.price.value.toString()),
-      );
-      setMessage(`Transaction sent: ${tx.hash}`);
-      await tx.wait();
+      // const tx = await contract.createGame(
+      //   gameId,
+      //   ethers.utils.parseEther(roomDetailDataModified.price.value.toString()),
+      // );
+      // setMessage(`Transaction sent: ${tx.hash}`);
+      // await tx.wait();
       setMessage(`Game created successfully!`);
       createGameDone(gameId);
-      setLoadingCreateBattle(false);
     } catch (error) {
       console.log('Error creating game:', error);
       handleRejectCreateBattle(gameId);
-      setLoadingCreateBattle(false);
       setMessage(`Failed to create game: ${error.message}`);
     }
   };
@@ -95,13 +94,13 @@ const Arena = ({
         MultiGameAbi,
         signer,
       );
-      const tx = await contract.joinGame(gameId, {
-        value: ethers.utils.parseEther(
-          roomDetailDataModified.price.value.toString(),
-        ),
-      });
-      setMessage(`Transaction sent: ${tx.hash}`);
-      await tx.wait();
+      // const tx = await contract.joinGame(gameId, {
+      //   value: ethers.utils.parseEther(
+      //     roomDetailDataModified.price.value.toString(),
+      //   ),
+      // });
+      // setMessage(`Transaction sent: ${tx.hash}`);
+      // await tx.wait();
       console.log(gameId);
       depositDone(gameId);
       setMessage(`Joined game successfully!`);
@@ -180,6 +179,7 @@ const Arena = ({
   }, [gameId]);
 
   const userIdLocal = Number(localstoreUtilites.getUserIdFromLocalStorage());
+  console.log(meetingLogsDetailSelector, roomDetailDataModified.currentMeetingLogId.value, loadingCreateBattle, userListId);
   if (
     meetingLogsDetailSelector &&
     roomDetailDataModified.currentMeetingLogId.value !== 0 &&
@@ -189,7 +189,93 @@ const Arena = ({
       <div>
         <React.Fragment>
           <div className="room-detail-list">
-            {userListId.value.map((p, key) => (
+            {meetingLogsDetailSelector.userList ?
+              <React.Fragment>
+              {userListId.value.map((p, key) => (
+              <div key={key} className="room-detail-person">
+                <img
+                  className="room-detail-avatar"
+                  src={
+                    meetingLogsDetailSelector.userList.find((i) => i.id === p)
+                      ? meetingLogsDetailSelector.userList.find((i) => i.id === p).avatar
+                      : ''
+                  }
+                  alt=""
+                />
+                <p
+                  style={{
+                    marginTop: 25,
+                    padding: '3px 10px',
+                    borderRadius: '25px',
+                    boxShadow: '0px 0px 36px 12px #e7c526',
+                  }}
+                >
+                  {meetingLogsDetailSelector.userList.find((i) => i.id === p)
+                    ? meetingLogsDetailSelector.userList.find((i) => i.id === p).name
+                    : ''}
+                </p>
+                {meetingLogsDetailSelector.userList.find((i) => i.id === p) ? (
+                  meetingLogsDetailSelector.userList.find((i) => i.id === p).isDeposit ? (
+                    <Button
+                      variant="contained"
+                      // disabled={currentPeople.value === totalPeople.value ? false : true}
+                      color="white"
+                      style={{
+                        background: 'yellowgreen',
+                        color: 'white',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      <FormattedMessage {...messages.deposited} />
+                      <Icon
+                        icon="ic:baseline-done-all"
+                        fontSize="20px"
+                        style={{ marginLeft: 10 }}
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={() => joinGame(meetingLogsDetailSelector.userList.find((i) => i.id === p))}
+                      disabled={
+                        Number(p) !== userIdLocal || loadingDeposit
+                          ? true
+                          : false
+                      }
+                      color="white"
+                      style={{
+                        background: '#00B5AD',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        gap: 10,
+                      }}
+                    >
+                      <FormattedMessage {...messages.deposit} />
+                      {loadingDeposit && Number(p) === userIdLocal ? (
+                        <Icon
+                          icon="eos-icons:bubble-loading"
+                          fontSize="20px"
+                          style={{ marginLeft: 10 }}
+                        />
+                      ) : (
+                        <Icon
+                          icon="mdi:instant-deposit"
+                          fontSize="20px"
+                          style={{ marginLeft: 10 }}
+                        />
+                      )}
+                    </Button>
+                  )
+                ) : (
+                  ''
+                )}
+              </div>
+            ))}
+              </React.Fragment>
+              :
+              <React.Fragment>
+              {userListId.value.map((p, key) => (
               <div key={key} className="room-detail-person">
                 <img
                   className="room-detail-avatar"
@@ -200,7 +286,14 @@ const Arena = ({
                   }
                   alt=""
                 />
-                <p>
+                <p
+                  style={{
+                    marginTop: 25,
+                    padding: '3px 10px',
+                    borderRadius: '25px',
+                    boxShadow: '0px 0px 36px 12px #e7c526',
+                  }}
+                >
                   {userList.find((i) => i.id === p)
                     ? userList.find((i) => i.id === p).name
                     : ''}
@@ -263,6 +356,9 @@ const Arena = ({
                 )}
               </div>
             ))}
+              </React.Fragment>
+            }
+            
           </div>
         </React.Fragment>
       </div>
@@ -292,14 +388,21 @@ const Arena = ({
                         ? 'eos-icons:bubble-loading'
                         : 'fluent-mdl2:add-friend'
                     }
-                    style={{ marginLeft: 10 }}
+                    style={{ marginLeft: 10, color: 'white' }}
                     className="add-friend"
                     onClick={() =>
                       sendAddFriend(userList.find((i) => i.id === p))
                     }
                   />
                 )}
-                <p>
+                <p
+                  style={{
+                    marginTop: 25,
+                    padding: '3px 10px',
+                    borderRadius: '25px',
+                    boxShadow: '0px 0px 36px 12px #e7c526',
+                  }}
+                >
                   {userList.find((i) => i.id === p)
                     ? userList.find((i) => i.id === p).name
                     : ''}

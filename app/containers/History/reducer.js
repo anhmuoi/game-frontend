@@ -62,11 +62,11 @@ export const initialState = fromJS({
     recordsTotal: 1,
     recordsFiltered: 1,
     sortDirection: 'desc',
-    sortColumn: 'Name',
+    sortColumn: 'CreatedOn',
     cloneSortColumn: 0,
     orderBy: '',
     pageNumber: 1,
-    pageSize: 25,
+    pageSize: 5,
   },
 });
 

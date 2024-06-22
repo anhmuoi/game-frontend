@@ -9,6 +9,7 @@ import ReactiveButton from 'reactive-button';
 import '../css/style-common.css';
 import '../css/style-basic.css';
 import './header.css';
+import { ethers } from 'ethers';
 
 let isConfirm = false;
 
@@ -51,6 +52,8 @@ function Header(props) {
     setIsNetworkSelectModalOpen(false);
   }
 
+  const [balance, setBalance] = useState(null);
+
   useEffect(() => {
     console.log(chainId, isConfirm);
     if (!chainId && isConfirm) {
@@ -89,15 +92,21 @@ function Header(props) {
       })();
       isConfirm = false;
     }
-  }, [account, error]);
+  }, [chainId, activate]);
 
   useEffect(() => {
-    if (!active && localStorage.getItem('accountStatus')) {
-      console.log('a');
-      loginByAddress();
-      activate(injected);
+    async function fetchData() {
+      if (active && account) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const balance = await provider.getBalance(account);
+        setBalance(ethers.utils.formatEther(balance));
+        loginByAddress(account, ethers.utils.formatEther(balance));
+      } else if (!active && localStorage.getItem('accountStatus')) {
+        activate(injected);
+      }
     }
-  }, []);
+    fetchData();
+  }, [active, account, activate]);
 
   const customStyles = {
     content: {
@@ -139,6 +148,7 @@ function Header(props) {
           style={{ justifyContent: 'flex-end' }}
         >
           <ReactiveButton
+            style={{ height: 42 }}
             idleText={
               <Flex alignItems="center">
                 <Icon

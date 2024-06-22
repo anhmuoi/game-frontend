@@ -43,6 +43,9 @@ import {
   SET_WORKTYPES_LIST_MARKET,
   UPDATE_AVATAR,
   SET_STORE_LIST_WAITING,
+  GET_USER_LIST_MARKET,
+  SET_USER_LIST_MARKET,
+  UPDATE_BALANCE_MARKET,
 } from './constants';
 
 /**
@@ -290,5 +293,20 @@ export function updateAvatar(file) {
   return {
     type: UPDATE_AVATAR,
     file,
+  };
+}
+
+export function getUserData() {
+  return { type: GET_USER_LIST_MARKET };
+}
+export function setUserData(userList) {
+  return { type: SET_USER_LIST_MARKET, userList };
+}
+
+export function updateBalance(userId, balance) {
+  return {
+    type: UPDATE_BALANCE_MARKET,
+    userId,
+    balance,
   };
 }

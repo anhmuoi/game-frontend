@@ -31,9 +31,12 @@ export const mapModelRoomDetailUiToApi = (roomDetailUi) => {
     name: '',
     isRunning: false,
     description: '',
+    default: false,
+    passwordRoom: '',
     totalPeople: 0,
     currentPeople: 0,
     price: 0,
+    userListId: [],
   };
 
   if (roomDetailUi) {

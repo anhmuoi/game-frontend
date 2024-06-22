@@ -107,4 +107,13 @@ export default defineMessages({
     id: `${scope}.notiGetFriend`,
     defaultMessage: `You received a friend request from: `,
   },
+  setting: {
+    id: `${scope}.setting`,
+    defaultMessage: `Room Setting`,
+  },
+  passwordRoom: {
+    id: `${scope}.passwordRoom`,
+    defaultMessage: `Password`,
+  },
+
 });

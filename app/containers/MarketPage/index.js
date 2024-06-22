@@ -23,7 +23,8 @@ import reducer from './reducer.js';
 import saga from './saga.js';
 import { mainStyle } from './styles.js';
 import InputUI from 'components/InputUI';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import imgAttack from 'images/people/attack.png';
 import { FormattedMessage } from 'react-intl';
 import { API_COLUMNS, MQTT_TYPE } from '../../utils/constants.js';
@@ -41,6 +42,8 @@ import {
   getSortMarketList,
   postMarketAdd,
   putMarketUpdate,
+  getUserData,
+  updateBalance,
 } from './actions.js';
 import messages from './messages.js';
 import './styles.css';
@@ -50,6 +53,7 @@ import {
   getMarketDataModified,
   getMarketDataSelector,
   getstoreListData,
+  getUserListData,
 } from './selectors.js';
 import Header from '../../components/Header/index.js';
 import { create_UUID } from '../../utils/utils.js';
@@ -57,7 +61,13 @@ import WebSocketMqtt from '../../utils/mqtt.js';
 import { Close, Menu, NoteAddOutlined } from '@material-ui/icons';
 import Sidebar from './Sidebar.js';
 import { mapModelMarketUiToApi } from './functions.js';
+import {
+  buyNftSuccess,
+  canNotBuyNftOfYourSelf,
+} from '../../utils/translation.js';
+import { ethers } from 'ethers';
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
+toast.configure();
 
 export const headers = [
   {
@@ -98,12 +108,64 @@ export class MarketInformationPage extends React.Component {
     openModalSell: false,
     itemSellSelected: null,
     priceSell: 0,
+
+    account: null,
+    provider: null,
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     this.getDataMarketTable([], [], null);
     // this.props.getMarketInit();
+    this.props.onGetUserData();
+
+    const provider = new ethers.providers.JsonRpcProvider(
+      window.env.REACT_APP_BSC_TESTNET_URL,
+    );
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    });
+
+    this.setState({ provider, account: accounts[0] });
   }
+
+  transferBNB = async (nftApi, userList) => {
+    const recipient = userList.find((i) => i.id === nftApi.userId);
+
+    if (!nftApi.price || isNaN(nftApi.price) || parseFloat(nftApi.price) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+
+    if (!ethers.utils.isAddress(recipient.walletAddress)) {
+      toast.error('Please enter a valid recipient address');
+      return;
+    }
+
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const tx = await signer.sendTransaction({
+        to: recipient.walletAddress,
+        value: ethers.utils.parseEther(nftApi.price.toString()),
+      });
+
+      toast.success(buyNftSuccess(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+      return true;
+    } catch (error) {
+      console.error('Error transferring BNB:', error);
+      toast.error(`Failed to transfer BNB: ${error.message}`);
+      return false;
+    }
+  };
 
   getDataMarketTable(departmentIds, status, search) {
     this.props.onGetMarketData(departmentIds, status, search);
@@ -293,15 +355,63 @@ export class MarketInformationPage extends React.Component {
     });
   };
 
-  buyItemNft = () => {
+  buyItemNft = async () => {
     const { itemSellSelected } = this.state;
     const { onUpdateMarket } = this.props;
 
     const nftApi = mapModelMarketUiToApi(this.props.marketDataModified.toJS());
 
-    nftApi.status = 0;
-    nftApi.userId = localstoreUtilites.getUserIdFromLocalStorage();
-    onUpdateMarket(itemSellSelected.id, nftApi);
+    console.log(nftApi, localstoreUtilites.getUserIdFromLocalStorage());
+    if (
+      Number(nftApi.userId) ===
+      Number(localstoreUtilites.getUserIdFromLocalStorage())
+    ) {
+      toast.error(canNotBuyNftOfYourSelf(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    } else {
+      const transfer = await this.transferBNB(
+        nftApi,
+        this.props.userListDataSelector,
+      );
+
+      if (transfer) {
+        const oldNFTUserId = nftApi.userId;
+        nftApi.status = 0;
+        nftApi.userId = localstoreUtilites.getUserIdFromLocalStorage();
+        onUpdateMarket(itemSellSelected.id, nftApi);
+
+        const balanceBuyer = await this.state.provider.getBalance(
+          this.state.account,
+        );
+        this.props.onUpdateBalance(
+          Number(localstoreUtilites.getUserIdFromLocalStorage()),
+          Number(ethers.utils.formatEther(balanceBuyer)) - Number(nftApi.price),
+        );
+      
+
+        // update balance seller
+        const recipient = this.props.userListDataSelector.find(
+          (i) => i.id === oldNFTUserId,
+        );
+        const balanceSeller = await this.state.provider.getBalance(
+          recipient.walletAddress,
+        );
+        this.props.onUpdateBalance(
+          recipient.id,
+          Number(ethers.utils.formatEther(balanceSeller)) +
+            Number(nftApi.price),
+        );
+       
+      }
+    }
   };
   cancelSellItemNft = async (item) => {
     await this.props.onInitIndexMarket(item.id);
@@ -414,7 +524,7 @@ export class MarketInformationPage extends React.Component {
           src={battlegrounds[0].image}
           alt=""
         /> */}
-        <Header loginByAddress={() => null} history={history}/>
+        <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
         </div>
@@ -549,9 +659,12 @@ MarketInformationPage.propTypes = {
   onChangeTextField: PropTypes.func,
   onGetSortColumn: PropTypes.func,
   onGetSortDirection: PropTypes.func,
+  onGetUserData: PropTypes.func,
 
   loading: PropTypes.bool,
   history: PropTypes.object,
+  userListDataSelector: PropTypes.array,
+  onUpdateBalance: PropTypes.func,
 };
 
 function mapDispatchToProps(dispatch) {
@@ -580,6 +693,11 @@ function mapDispatchToProps(dispatch) {
     onGetSortColumn: (sortColumn, cloneSortColumn) =>
       dispatch(getSortMarketList(sortColumn, cloneSortColumn)),
     onGetSortDirection: () => dispatch(getSortDirectionMarketList()),
+
+    onGetUserData: () => dispatch(getUserData()),
+
+    onUpdateBalance: (userId, balance) =>
+      dispatch(updateBalance(userId, balance)),
   };
 }
 
@@ -591,6 +709,7 @@ const mapStateToProps = createStructuredSelector({
   loading: makeSelectLoading(),
   storeList: getstoreListData(),
   marketDataModified: getMarketDataModified(),
+  userListDataSelector: getUserListData(),
 });
 
 const withReducer = injectReducer({ key: 'market', reducer });

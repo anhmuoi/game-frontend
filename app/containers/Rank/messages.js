@@ -178,4 +178,12 @@ export default defineMessages({
     id: `${scope}.group`,
     defaultMessage: `Group`,
   },
+  yourRank: {
+    id: `${scope}.yourRank`,
+    defaultMessage: `Your Rank`,
+  },
+  yourBalance: {
+    id: `${scope}.yourBalance`,
+    defaultMessage: `Your Balance`,
+  },
 });

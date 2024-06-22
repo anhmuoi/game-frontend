@@ -12,11 +12,13 @@ import {
   getFriendUserIdSuccess,
   getInitIndexMeetingLogsSuccess,
   getInitIndexRoomDetailSuccess,
+  getItemNftSuccess,
   getRoomDetailDataSuccess,
   invalidModel,
   onAddFriendSuccess,
   setDepartmentsListRoomDetail,
   setGenderListRoomDetail,
+  setItemListSystem,
   setMetaRoomDetail,
   setStatusListRoomDetail,
   setStoreListWaiting,
@@ -35,9 +37,14 @@ import {
   FETCH_ROOM_DETAIL_INIT,
   FETCH_USER_ROOM_DETAIL,
   GET_FRiEND_BY_USERID,
+  GET_ITEM_LIST_SYSTEM,
+  GET_ITEM_NFT,
   GET_MEETING_LOGS_BY_ID,
   INIT_INDEX_ROOM_DETAIL,
   ON_ADD_FRIEND,
+  POST_ASSIGN_ITEM,
+  PUT_USE_ITEM,
+  UPDATE_BALANCE,
   UPDATE_ROOM_DETAIL,
   UPDATE_ROOM_DETAIL_SUCCESS,
 } from './constants.js';
@@ -188,11 +195,13 @@ export function* getInitIndexRoomDetail(action) {
       const data = {
         name: '',
         isRunning: false,
-        description: '',
+        default: false,
+        passwordRoom: '',
         totalPeople: 0,
         currentPeople: 0,
         currentMeetingLogId: 0,
         price: 0,
+        userListId: [],
       };
       yield put(getInitIndexRoomDetailSuccess(mapModelRoomDetailApiToUI(data)));
       yield put(loadSuccess());
@@ -348,6 +357,114 @@ export function* postAddFriend(action) {
   }
 }
 
+export function* postUpdateBalance(action) {
+  const url = `${URL_DOMAIN}/users/update-balance?userId=${action.userId}&balance=${action.balance}`;
+
+  try {
+    const res = yield call(request, url.trim(), option('POST', {}));
+    // const res = { message: 'dkgdfklg', statusCode: 200 };
+    // handle error if not get data
+    if (
+      res.statusCode &&
+      res.statusCode !== responseCode.ok &&
+      res.statusCode !== responseCode.createNew
+    ) {
+      // notify to Market or throw exception
+      const err = { message: res.message };
+      throw err;
+    }
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
+export function* getItemNFTData(action) {
+  const userId = localstoreUtilites.getUserIdFromLocalStorage();
+
+  const url = `${URL_DOMAIN}/item-nft-users?status=0&getAll=true${
+    userId ? `&userId=${Number(userId)}` : ''
+  }`;
+
+  try {
+    const res = yield call(request, url.trim(), option('GET'));
+
+    if (!res.data) {
+      const err = { message: res.message };
+      throw err;
+    }
+
+    // dispatch to Market reducer
+
+    yield put(getItemNftSuccess(res.data));
+    // hide progress
+    yield put(loadSuccess());
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
+export function* putUseItemNFT(action) {
+  const urlUpdateSetting = `${URL_DOMAIN}/item-nft-users/use?userId=${localstoreUtilites.getUserIdFromLocalStorage()}${
+    action.idItemList
+      ? `&idItemList=${action.idItemList.join('&idItemList=')}`
+      : ''
+  }`;
+  try {
+    const res = yield call(request, urlUpdateSetting, option('PUT', {}));
+    // model invalid
+    if (res.statusCode === responseCode.validationFailed) {
+      // hightlight field error
+      yield put(invalidModel(res.errors));
+      const err = { message: res.message };
+      throw err;
+    }
+
+    // hide progress
+    yield put(loadSuccess());
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+export function* postAssignItemNFT(action) {
+  const urlUpdateSetting = `${URL_DOMAIN}/item-nft-users/assign?userId=${localstoreUtilites.getUserIdFromLocalStorage()}${
+    action.idItemNftId
+      ? `&idItemNftId=${action.idItemNftId.join('&idItemNftId=')}`
+      : ''
+  }`;
+  try {
+    const res = yield call(request, urlUpdateSetting, option('POST', {}));
+    // model invalid
+    if (res.statusCode === responseCode.validationFailed) {
+      // hightlight field error
+      yield put(invalidModel(res.errors));
+      const err = { message: res.message };
+      throw err;
+    }
+
+    // hide progress
+    yield put(loadSuccess());
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
+export function* getItemListSystem() {
+  const urlCoupon = `${URL_DOMAIN}/item-nfts?pageNumber=${1}&pageSize=${9999999}`;
+  try {
+    const res = yield call(request, urlCoupon, option('GET'));
+    if (res.statusCode && res.statusCode === responseCode.internalServer) {
+      // notify to SystemMembers or throw exception
+      const err = { message: res.message };
+      throw err;
+    }
+
+    yield put(setItemListSystem(res.data));
+    yield put(loadSuccess());
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+  return false;
+}
 /**
  * Root saga manages watcher lifecycle
  */
@@ -369,4 +486,11 @@ export default function* roomDetailData() {
   // friend
   yield takeLatest(GET_FRiEND_BY_USERID, getFriendData);
   yield takeLatest(ON_ADD_FRIEND, postAddFriend);
+
+  yield takeLatest(UPDATE_BALANCE, postUpdateBalance);
+
+  yield takeLatest(PUT_USE_ITEM, putUseItemNFT);
+  yield takeLatest(POST_ASSIGN_ITEM, postAssignItemNFT);
+  yield takeLatest(GET_ITEM_NFT, getItemNFTData);
+  yield takeLatest(GET_ITEM_LIST_SYSTEM, getItemListSystem);
 }

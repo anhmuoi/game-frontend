@@ -180,10 +180,13 @@ export function* getInitIndexRoomManage(action) {
       const data = {
         name: '',
         isRunning: false,
+        default: true,
         description: '',
         totalPeople: 0,
         currentPeople: 0,
         price: 0,
+        passwordRoom: '',
+        userListId: [],
       };
       yield put(getInitIndexRoomManageSuccess(mapModelRoomManageApiToUI(data)));
       yield put(loadSuccess());

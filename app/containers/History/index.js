@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Collapse,
   Grid,
   IconButton,
   Tooltip,
@@ -60,6 +61,7 @@ import WebSocketMqtt from '../../utils/mqtt.js';
 import { Close, Menu, NoteAddOutlined } from '@material-ui/icons';
 import Sidebar from './Sidebar.js';
 import { mapModelMarketUiToApi } from './functions.js';
+import Pagination from './Pagination.js';
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
 
 export const headers = [
@@ -132,8 +134,13 @@ export class MarketInformationPage extends React.Component {
     );
   };
 
-  changePageNumber = (pageNumber) => this.props.onChangePageNumber(pageNumber);
-  changePageSize = (pageSize) => this.props.onChangePageSize(pageSize);
+  changePageNumber = (pageNumber) => {
+    this.props.onChangePageNumber(pageNumber);
+    this.pagingRemote();
+  };
+  changePageSize = (pageSize) => {
+    this.props.onChangePageSize(pageSize);
+  };
   pagingRemote = () =>
     this.props.onGetMarketData(
       this.state.departmentsIdFilter,
@@ -319,24 +326,50 @@ export class MarketInformationPage extends React.Component {
 
   handleDatas = (datas, userList) => {
     let newData = [];
-    if (userList.length) {
-      newData.push({
-        avatar: userList[1].avatar,
-        name: userList[1].name,
-      });
-      newData.push({
-        avatar: userList[1].avatar,
-        name: userList[1].name,
-      });
-      newData.push({
-        avatar: userList[2].avatar,
-        name: userList[2].name,
-      });
-    }
-    console.log(datas);
-    const userId = Number(localstoreUtilites.getUserIdFromLocalStorage());
+
+    datas.map((i) => {
+      if (i.gamePlay) {
+        if (i.gamePlay.orderWinning && i.gamePlay.orderWinning.length > 0) {
+          const userCheck = userList.find(
+            (m) => m.id === i.gamePlay.orderWinning[0],
+          );
+          newData.push({
+            ...i,
+            avatar: userCheck.avatar,
+            name: userCheck.name,
+          });
+        } else {
+          newData.push({
+            ...i,
+            avatar: '',
+            name: '',
+          });
+        }
+      } else {
+        newData.push({
+          ...i,
+          avatar: '',
+          name: '',
+        });
+      }
+    });
+    console.log(newData);
 
     return newData;
+  };
+
+  handleSelectedDetail = (id) => {
+    if (this.state.historyIdSelected.includes(id)) {
+      this.setState({
+        historyIdSelected: [
+          ...this.state.historyIdSelected.filter((m) => m !== id),
+        ],
+      });
+    } else {
+      this.setState({
+        historyIdSelected: [...this.state.historyIdSelected, id],
+      });
+    }
   };
 
   render() {
@@ -378,8 +411,9 @@ export class MarketInformationPage extends React.Component {
       itemNftId,
       userId,
     } = historyDataModified.toJS();
+    const { pageNumber, pageSize, recordsFiltered, recordsTotal } = meta.toJS();
 
-    console.log(userList);
+    console.log(meta.toJS());
     let user = null;
     if (userList && userList.length > 0) {
       user = userList.find(
@@ -397,55 +431,6 @@ export class MarketInformationPage extends React.Component {
           history={history}
         />
 
-        {openModalSell ? (
-          <div className="modal-sell-item">
-            <IconButton
-              color="white"
-              className="modal-sell-close"
-              onClick={() => this.closeModalSell()}
-            >
-              <Close />
-            </IconButton>
-            <img src={image.value} className="sell-img" />
-            <p className="sell-name">{name.value} </p>
-            <InputUI
-              id="price"
-              name="price"
-              // autoFocus
-              value={price.value}
-              color="white"
-              onChange={onChangeTextField}
-              typeInput="number"
-              label={<FormattedMessage {...messages.price} />}
-            />
-            <div style={{ textAlign: 'center' }}>
-              <Button
-                onClick={() => this.sellItemNft()}
-                style={{
-                  background: '#00B5AD',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  margin: 20,
-                }}
-              >
-                <FormattedMessage {...messages.sell}></FormattedMessage>
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
-        {/* <img
-          style={{
-            width: '100%',
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-          }}
-          src={battlegrounds[0].image}
-          alt=""
-        /> */}
         <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
@@ -480,49 +465,166 @@ export class MarketInformationPage extends React.Component {
           style={{ marginTop: 80, gap: 30, flexDirection: 'column' }}
         >
           {this.handleDatas(datas, userList).map((user, key) => (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: 10,
-                alignItems: 'center',
-                paddingLeft: 10,
-                paddingRight: 10,
-                width: '100%',
-                background: '#00B5AD',
-                borderRadius: 20,
-              }}
-            >
+            <div>
               <div
                 style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   gap: 10,
                   alignItems: 'center',
-                  display: 'flex',
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  width: '100%',
+                  background: '#00B5AD',
+                  borderRadius: 20,
+                  height: 70,
                 }}
               >
-                <Icon icon="game-icons:podium-winner" fontSize="40px" />
+                <div
+                  style={{
+                    gap: 10,
+                    alignItems: 'center',
+                    display: 'flex',
+                  }}
+                >
+                  <Icon icon="game-icons:podium-winner" fontSize="40px" />
 
-                <img
-                  src={user.avatar}
-                  style={{ width: 50, height: 50, borderRadius: '100%' }}
-                />
-                <p style={{ color: 'white', fontWeight: 'bold', fontSize: 25 }}>
-                  {user.name}
-                </p>
+                  <img
+                    src={user.avatar}
+                    style={{ width: 50, height: 50, borderRadius: '100%' }}
+                  />
+                  <p
+                    style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}
+                  >
+                    {user.name}
+                  </p>
+                </div>
+                <div
+                  onClick={() => this.handleSelectedDetail(user.id)}
+                  style={{
+                    padding: 10,
+                    background: 'gray',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  <FormattedMessage {...messages.viewDetail} />
+                </div>
               </div>
-              <div
+              <Collapse
+                in={this.state.historyIdSelected.includes(user.id)}
+                timeout="auto"
+                unmountOnExit
                 style={{
-                  padding: 10,
-                  background: 'gray',
-                  borderRadius: 10,
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
+                  width: '90%',
+                  margin: '0 auto',
+                  background: 'white',
+                  color: 'gray',
+                  fontWeight: 'bolder',
                 }}
               >
-                <FormattedMessage {...messages.viewDetail} />
-              </div>
+                <div>
+                  {user.userList.map((u) => (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 10,
+                        borderBottom: '1px solid #00B5AD',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'start',
+                          gap: 10,
+                          flex: '0.25',
+                        }}
+                      >
+                        <img
+                          src={u.avatar}
+                          alt=""
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: '100%',
+                          }}
+                        />
+                        <div>{u.name}</div>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 5,
+                        }}
+                      >
+                        {u.nftList.map((n) => (
+                          <img
+                            alt=""
+                            src={n.image}
+                            className={`${n.isUse ? 'used-nft' : ''}`}
+                          />
+                        ))}
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flex: '0.25',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            flex: '0.25',
+                          }}
+                        >
+                          {u.hp} <Icon icon="noto:red-heart" fontSize="20px" />
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            flex: '0.25',
+                          }}
+                        >
+                          {u.mana}{' '}
+                          <Icon icon="noto:blue-circle" fontSize="20px" />
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            flex: '0.25',
+                          }}
+                        >
+                          {u.shield} <Icon icon="noto:shield" fontSize="20px" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Collapse>
             </div>
           ))}
+
+          <Pagination
+            totalRecords={recordsTotal}
+            pageSize={pageSize}
+            currentPage={pageNumber}
+            onPageChange={(page) => this.changePageNumber(page)}
+          />
         </div>
       </div>
     );

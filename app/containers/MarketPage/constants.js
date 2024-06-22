@@ -46,3 +46,6 @@ export const SET_WORKTYPES_LIST_MARKET =
 export const UPDATE_AVATAR = 'demasterpro/MARKET/UPDATE_AVATAR';
 export const SET_STORE_LIST_WAITING =
   'demasterpro/MARKET/SET_STORE_LIST_WAITING';
+export const GET_USER_LIST_MARKET = 'demasterpro/MARKET/GET_USER_LIST_MARKET';
+export const SET_USER_LIST_MARKET = 'demasterpro/MARKET/SET_USER_LIST_MARKET';
+export const UPDATE_BALANCE_MARKET = 'demasterpro/MARKET/UPDATE_BALANCE_MARKET';

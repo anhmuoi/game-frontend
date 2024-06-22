@@ -74,3 +74,13 @@ export const GET_FRiEND_BY_USERID_SUCCESS =
 export const ON_ADD_FRIEND = 'demasterpro/ROOM_DETAIL/ON_ADD_FRIEND';
 export const ON_ADD_FRIEND_SUCCESS =
   'demasterpro/ROOM_DETAIL/ON_ADD_FRIEND_SUCCESS';
+export const UPDATE_BALANCE = 'demasterpro/ROOM_DETAIL/UPDATE_BALANCE';
+export const GET_ITEM_NFT = 'demasterpro/ROOM_DETAIL/GET_ITEM_NFT';
+export const GET_ITEM_NFT_SUCCESS =
+  'demasterpro/ROOM_DETAIL/GET_ITEM_NFT_SUCCESS';
+export const PUT_USE_ITEM = 'demasterpro/ROOM_DETAIL/PUT_USE_ITEM';
+export const POST_ASSIGN_ITEM = 'demasterpro/ROOM_DETAIL/POST_ASSIGN_ITEM';
+export const GET_ITEM_LIST_SYSTEM =
+  'demasterpro/ROOM_DETAIL/GET_ITEM_LIST_SYSTEM';
+export const GET_ITEM_LIST_SYSTEM_SUCCESS =
+  'demasterpro/ROOM_DETAIL/GET_ITEM_LIST_SYSTEM_SUCCESS';

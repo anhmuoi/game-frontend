@@ -47,6 +47,7 @@ import {
   getFriendData,
   deleteMultiesFriend,
   userOutGroup,
+  requestAddFriend,
 } from './actions.js';
 import messages from './messages.js';
 import './styles.css';
@@ -601,6 +602,12 @@ export class MarketInformationPage extends React.Component {
                               fontSize="30px"
                               style={{ marginLeft: 20 }}
                               className="add-friend"
+                              onClick={() => {
+                                this.props.onRequestAddFriend(user.id, mem.id);
+                                this.setState({
+                                  sendAddFriendState: true,
+                                });
+                              }}
                             />
                           )}
                         </div>
@@ -648,6 +655,7 @@ MarketInformationPage.propTypes = {
   onRequestJoinGroup: PropTypes.func,
   onGetFriendData: PropTypes.func,
   onUserOutGroup: PropTypes.func,
+  onRequestAddFriend: PropTypes.func,
 
   loading: PropTypes.bool,
   history: PropTypes.object,
@@ -688,6 +696,9 @@ function mapDispatchToProps(dispatch) {
 
     //
     onUserOutGroup: (id, groupId) => dispatch(userOutGroup(id, groupId)),
+
+    onRequestAddFriend: (userId1, userId2) =>
+      dispatch(requestAddFriend(userId1, userId2)),
   };
 }
 

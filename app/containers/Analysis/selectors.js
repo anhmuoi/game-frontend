@@ -35,6 +35,10 @@ const getUserListData = () =>
   createSelector(selectMarket, (roomDetailState) =>
     roomDetailState.get('userList'),
   );
+const getBalanceChartSelector = () =>
+  createSelector(selectMarket, (roomDetailState) =>
+    roomDetailState.get('balanceChart'),
+  );
 
 export {
   selectMarket,
@@ -45,4 +49,5 @@ export {
   getMetaPagingMarket,
   getstoreListData,
   getUserListData,
+  getBalanceChartSelector,
 };

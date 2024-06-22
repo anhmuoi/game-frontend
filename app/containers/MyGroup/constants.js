@@ -61,7 +61,7 @@ export const DELETE_MULTIES_FRIEND =
   'demasterpro/MY_GROUP/DELETE_MULTIES_FRIEND';
 export const DELETE_MULTIES_FRIEND_SUCCESS =
   'demasterpro/MY_GROUP/DELETE_MULTIES_FRIEND_SUCCESS';
-export const USER_OUT_GROUP =
-  'demasterpro/MY_GROUP/USER_OUT_GROUP';
+export const USER_OUT_GROUP = 'demasterpro/MY_GROUP/USER_OUT_GROUP';
 export const USER_OUT_GROUP_SUCCESS =
   'demasterpro/MY_GROUP/USER_OUT_GROUP_SUCCESS';
+export const REQUEST_ADD_FRIEND = 'demasterpro/MY_GROUP/REQUEST_ADD_FRIEND';

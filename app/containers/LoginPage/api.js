@@ -13,10 +13,11 @@ async function login({ username, password }) {
     throw error;
   }
 }
-async function loginByAddress({ address }) {
+async function loginByAddress({ address, balance }) {
   try {
     const res = await ApiClient.post('/login-by-address', {
       address,
+      balance,
     });
 
     return res.data;

@@ -19,6 +19,7 @@ import {
   setStoreListWaiting,
   setWorkTypesListMarket,
   updateMarketSuccess,
+  setUserData,
 } from './actions.js';
 import {
   ADD_MARKET,
@@ -32,6 +33,8 @@ import {
   INIT_INDEX_MARKET,
   UPDATE_MARKET,
   UPDATE_MARKET_SUCCESS,
+  GET_USER_LIST_MARKET,
+  UPDATE_BALANCE_MARKET,
 } from './constants.js';
 
 import { convertShowDateTime, formatDateToSend } from '../../utils/utils.js';
@@ -262,10 +265,50 @@ export function* deleteMultiesMarket(action) {
   }
 }
 
+export function* getUserList() {
+  const urlStoreIdList = `${URL_DOMAIN}/users?pageNumber=1&pageSize=9999`;
+  try {
+    const res = yield call(request, urlStoreIdList, option('GET'));
+    if (res.statusCode && res.statusCode === responseCode.internalServer) {
+      // notify to SystemStore or throw exception
+      const err = { message: res.message };
+      throw err;
+    }
+
+    yield put(setUserData(res.data));
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+  return false;
+}
+
+export function* postUpdateBalance(action) {
+  const url = `${URL_DOMAIN}/users/update-balance?userId=${action.userId}&balance=${action.balance}`;
+
+  try {
+    const res = yield call(request, url.trim(), option('POST', {}));
+    // const res = { message: 'dkgdfklg', statusCode: 200 };
+    // handle error if not get data
+    if (
+      res.statusCode &&
+      res.statusCode !== responseCode.ok &&
+      res.statusCode !== responseCode.createNew
+    ) {
+      // notify to Market or throw exception
+      const err = { message: res.message };
+      throw err;
+    }
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
 /**
  * Root saga manages watcher lifecycle
  */
 export default function* marketData() {
+  yield takeLatest(GET_USER_LIST_MARKET, getUserList);
+
   yield takeLatest(FETCH_MARKET_INIT, getMarketInit);
   yield takeLatest(FETCH_MARKET_DATA, getMarketData);
   yield takeLatest(UPDATE_MARKET, putMarketUpdate);
@@ -277,4 +320,6 @@ export default function* marketData() {
   yield takeLatest(DELETE_MARKET_SUCCESS, getMarketData);
   yield takeLatest(UPDATE_MARKET_SUCCESS, getMarketData);
   yield takeLatest(CREATE_MARKET_SUCCESS, getMarketData);
+
+  yield takeLatest(UPDATE_BALANCE_MARKET, postUpdateBalance);
 }

@@ -20,6 +20,11 @@ export default defineMessages({
     defaultMessage: 'Save',
   },
 
+  name: {
+    id: `demasterpro.containers.roomManagePage.name`,
+    defaultMessage: `Name`,
+  },
+
   price: {
     id: `demasterpro.containers.roomManagePage.price`,
     defaultMessage: `Price`,
@@ -94,5 +99,17 @@ export default defineMessages({
   btnDismiss: {
     id: `demasterpro.components.App.btnDismiss`,
     defaultMessage: `Your balance is not enough`,
+  },
+  passwordRoom: {
+    id: `demasterpro.containers.roomDetailPage.passwordRoom`,
+    defaultMessage: `Password`,
+  },
+  confirm: {
+    id: `${scope}.confirm`,
+    defaultMessage: `Confirm`,
+  },
+  createRoom: {
+    id: `${scope}.createRoom`,
+    defaultMessage: `Create Room`,
   },
 });

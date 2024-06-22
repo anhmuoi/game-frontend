@@ -63,6 +63,66 @@ export const agreeAddFriend = () => {
       return ' agreed to make friends!';
   }
 };
+export const textUpdateRoom = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Room information is updated!';
+    case LANGUAGE.KOREA:
+      return 'Room information is updated!';
+    case LANGUAGE.JAPANESE:
+      return 'Room information is updated!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Thông tin phòng đã được thay đổi!';
+
+    default:
+      return 'Room information is updated!';
+  }
+};
+export const passwordIncorrect = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Password is incorrect!';
+    case LANGUAGE.KOREA:
+      return 'Password is incorrect!';
+    case LANGUAGE.JAPANESE:
+      return 'Password is incorrect!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Mật khẩu không đúng!';
+
+    default:
+      return 'Password is incorrect!';
+  }
+};
+export const gameIsRunning = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Room is running!';
+    case LANGUAGE.KOREA:
+      return 'Room is running!';
+    case LANGUAGE.JAPANESE:
+      return 'Room is running!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Phòng đang được chơi!';
+
+    default:
+      return 'Room is running!';
+  }
+};
+export const nameRoomExist = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Room is exist!';
+    case LANGUAGE.KOREA:
+      return 'Room is exist!';
+    case LANGUAGE.JAPANESE:
+      return 'Room is exist!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Phòng đã tồn tại!';
+
+    default:
+      return 'Room is exist!';
+  }
+};
 export const existItem = () => {
   switch (lang) {
     case LANGUAGE.ENGLISH:
@@ -76,6 +136,66 @@ export const existItem = () => {
 
     default:
       return 'You cannot carry items with the same attributes!';
+  }
+};
+export const nameEmpty = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Name can not be empty!';
+    case LANGUAGE.KOREA:
+      return 'Name can not be empty!';
+    case LANGUAGE.JAPANESE:
+      return 'Name can not be empty!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Tên không được để trống!';
+
+    default:
+      return 'Name can not be empty!';
+  }
+};
+export const totalPeopleCondition = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Total People min is 2 and max is 4';
+    case LANGUAGE.KOREA:
+      return 'Total People min is 2 and max is 4';
+    case LANGUAGE.JAPANESE:
+      return 'Total People min is 2 and max is 4';
+    case LANGUAGE.VIETNAMESE:
+      return 'Tổng số người chơi ít nhất là 2 và tối đa là 4';
+
+    default:
+      return 'Total People min is 2 and max is 4';
+  }
+};
+export const canNotBuyNftOfYourSelf = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'You cannot buy NFT of yourself!';
+    case LANGUAGE.KOREA:
+      return 'You cannot buy NFT of yourself!';
+    case LANGUAGE.JAPANESE:
+      return 'You cannot buy NFT of yourself!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Bạn không thể mua NFT của chính bạn!';
+
+    default:
+      return 'You cannot buy NFT of yourself!';
+  }
+};
+export const buyNftSuccess = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'You buy NFT successfully!';
+    case LANGUAGE.KOREA:
+      return 'You buy NFT successfully!';
+    case LANGUAGE.JAPANESE:
+      return 'You buy NFT successfully!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Bạn đã mua NFT thành công!';
+
+    default:
+      return 'You buy NFT successfully!';
   }
 };
 export const AgreeMess = () => {

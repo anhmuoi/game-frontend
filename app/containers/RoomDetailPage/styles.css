@@ -38,12 +38,13 @@
     object-fit: cover;
 }
 .room-detail-person {
+    color: #e7c526;
     position: relative;
-    color: white;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    text-shadow: 0px 0px 20px #00B5AD;
 }
 .add-friend {
     position: absolute;
@@ -417,4 +418,13 @@
     height: 11px;
     text-align: center;
     border-radius: 100%;
+}
+
+.room-game-text {
+    font-size: 23px;
+    font-weight: bold;
+    color: #e7c526;
+    text-shadow: 0px 0px 20px #00B5AD;
+    animation: pulse 2s infinite;
+    line-height: 0;
 }

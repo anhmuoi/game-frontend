@@ -423,7 +423,7 @@ class DrawerMenu extends React.Component {
     return (
       <div className={classes.root}>
         <List component="nav">
-          <ListItem
+          {/* <ListItem
             button
             id="dashBoard"
             selected={this.state.selectedIndex === ROUTE.dashBoard}
@@ -435,7 +435,7 @@ class DrawerMenu extends React.Component {
             <ListItemText disableTypography>
               <FormattedMessage {...messages.dashboard} />
             </ListItemText>
-          </ListItem>
+          </ListItem> */}
           {/* {this.isRole(ROUTE.folder) && (
             <ListItem
               button

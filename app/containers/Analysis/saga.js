@@ -20,6 +20,7 @@ import {
   setWorkTypesListMarket,
   updateMarketSuccess,
   setUserData,
+  getBalanceChartSuccess,
 } from './actions.js';
 import {
   ADD_ANALYSIS,
@@ -33,6 +34,7 @@ import {
   INIT_INDEX_ANALYSIS,
   UPDATE_ANALYSIS,
   UPDATE_ANALYSIS_SUCCESS,
+  GET_BALANCE_CHART,
 } from './constants.js';
 
 import { convertShowDateTime, formatDateToSend } from '../../utils/utils.js';
@@ -250,6 +252,30 @@ export function* deleteMultiesMarket(action) {
   }
 }
 
+export function* getChartBalance(action) {
+  const userId = action.userId;
+  const startDate = action.startDate;
+  const endDate = action.endDate;
+  const url = `${URL_DOMAIN}/balances/chart?userId=${userId}&startDate=${formatDateToSend(
+    new Date(startDate),
+  )}&endDate=${formatDateToSend(new Date(endDate))}`;
+
+  try {
+    const res = yield call(request, url.trim(), option('GET'));
+
+    if (!res) {
+      const err = { message: res.message };
+      throw err;
+    }
+
+    yield put(getBalanceChartSuccess(res));
+    // hide progress
+    yield put(loadSuccess());
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
 /**
  * Root saga manages watcher lifecycle
  */
@@ -265,4 +291,6 @@ export default function* analysisData() {
   yield takeLatest(DELETE_ANALYSIS_SUCCESS, getMarketData);
   yield takeLatest(UPDATE_ANALYSIS_SUCCESS, getMarketData);
   yield takeLatest(CREATE_ANALYSIS_SUCCESS, getMarketData);
+
+  yield takeLatest(GET_BALANCE_CHART, getChartBalance);
 }

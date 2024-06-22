@@ -30,10 +30,13 @@ export const mapModelRoomGameUiToApi = (roomGameUi) => {
   const roomGameClone = {
     name: '',
     isRunning: false,
+    default: true,
     description: '',
+    passwordRoom: '',
     totalPeople: 0,
     currentPeople: 0,
     price: 0,
+    userListId: []
   };
 
   if (roomGameUi) {

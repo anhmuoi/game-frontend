@@ -8,6 +8,8 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { makeSelectError, makeSelectLoading } from 'containers/App/selectors';
+import imgbnb from 'images/bnb.svg';
+
 import { enqueueSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -47,18 +49,25 @@ import {
   onAddFriend,
   postRoomDetailAdd,
   putRoomDetailUpdate,
+  updateBalance,
+  getItemNft,
+  putUseItemNFT,
+  postAssignItemNFT,
+  getItemListSystem,
 } from './actions.js';
 import messages from './messages.js';
 import './styles.css';
 import {
   getAjaxInfo,
   getFriendListDataSelector,
+  getItemNftUserDataSelector,
   getMeetingLogsDetailSelector,
   getMetaPagingRoomDetail,
   getRoomDetailDataModified,
   getRoomDetailDataSelector,
   getUserListData,
   getstoreListData,
+  getItemSystemSelector,
 } from './selectors.js';
 import Header from '../../components/Header/index.js';
 import { create_UUID } from '../../utils/utils.js';
@@ -70,6 +79,7 @@ import {
   Notifications,
   People,
   Send,
+  Settings,
 } from '@material-ui/icons';
 import ModalMaterialUi from 'components/Modal';
 import CountdownTimer from './TimeRemain.js';
@@ -83,6 +93,7 @@ import {
   agreeAddFriend,
   existItem,
   notiGetFriend,
+  textUpdateRoom,
 } from '../../utils/translation.js';
 
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
@@ -103,6 +114,7 @@ const nftRawList = [
     isUse: false,
     index: 0,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 1,
@@ -112,6 +124,7 @@ const nftRawList = [
     isUse: false,
     index: 1,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 2,
@@ -121,6 +134,7 @@ const nftRawList = [
     isUse: false,
     index: 2,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 3,
@@ -130,6 +144,7 @@ const nftRawList = [
     isUse: false,
     index: 3,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 4,
@@ -139,6 +154,7 @@ const nftRawList = [
     isUse: false,
     index: 4,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 5,
@@ -148,6 +164,7 @@ const nftRawList = [
     isUse: false,
     index: 5,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 6,
@@ -157,6 +174,7 @@ const nftRawList = [
     isUse: false,
     index: 6,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 7,
@@ -166,6 +184,7 @@ const nftRawList = [
     isUse: false,
     index: 7,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 8,
@@ -175,6 +194,7 @@ const nftRawList = [
     isUse: false,
     index: 8,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 9,
@@ -184,6 +204,7 @@ const nftRawList = [
     isUse: false,
     index: 9,
     image: '',
+    idItemUser: 0,
   },
   {
     id: 10,
@@ -193,6 +214,7 @@ const nftRawList = [
     isUse: false,
     index: 10,
     image: '',
+    idItemUser: 0,
   },
 ];
 
@@ -241,6 +263,9 @@ export class RoomDetailInformationPage extends React.Component {
     departmentsIdFilter: [],
     startCountTimePlayer: false,
 
+    // room modify
+    settingRoomModal: false,
+
     start: false,
     timeRemain: 60,
     nFTListChoose: nftRawList,
@@ -283,9 +308,8 @@ export class RoomDetailInformationPage extends React.Component {
     unReadChat: false,
 
     // blockchain
+    account: null,
     provider: null,
-    signer: null,
-    contract: null,
     gameId: '',
     entryFee: '',
     winnerOfGame: '',
@@ -299,48 +323,9 @@ export class RoomDetailInformationPage extends React.Component {
     this.setState({ [name]: value });
   }
 
-  async createGame() {
-    const { contract, gameId, entryFee } = this.state;
-    try {
-      const tx = await contract.createGame(
-        gameId,
-        ethers.utils.parseEther(entryFee),
-      );
-      await tx.wait();
-      this.setState({ message: 'Game created successfully!' });
-    } catch (error) {
-      console.error(error);
-      this.setState({ message: 'Error creating game' });
-    }
-  }
-
-  async joinGame() {
-    const { contract, gameId, entryFee } = this.state;
-    try {
-      const tx = await contract.joinGame(gameId, {
-        value: ethers.utils.parseEther(entryFee),
-      });
-      await tx.wait();
-      this.setState({ message: 'Joined game successfully!' });
-    } catch (error) {
-      console.error(error);
-      this.setState({ message: 'Error joining game' });
-    }
-  }
-
-  async declareWinner() {
-    const { contract, gameId, winnerOfGame } = this.state;
-    try {
-      const tx = await contract.declareWinner(gameId, winnerOfGame);
-      await tx.wait();
-      this.setState({ message: 'Winner declared successfully!' });
-    } catch (error) {
-      console.error(error);
-      this.setState({ message: 'Error declaring winner' });
-    }
-  }
-
-  componentDidMount() {
+  async componentDidMount() {
+    this.props.onGetItemListSystem();
+    this.props.onGetItemNft();
     const { roomDetailDataModified, meetingLogsDetailSelector } = this.props;
     const {
       id,
@@ -364,17 +349,11 @@ export class RoomDetailInformationPage extends React.Component {
     const provider = new ethers.providers.JsonRpcProvider(
       window.env.REACT_APP_BSC_TESTNET_URL,
     );
-    const signer = new ethers.Wallet(
-      window.env.REACT_APP_PRIVATE_KEY,
-      provider,
-    );
-    const contract = new ethers.Contract(
-      window.env.REACT_APP_CONTRACT_ADDRESS,
-      multiGameABI,
-      signer,
-    );
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    });
 
-    this.setState({ provider, signer, contract });
+    this.setState({ provider, account: accounts[0] });
 
     this.props.onGetFriendUserId(
       localstoreUtilites.getUserIdFromLocalStorage(),
@@ -648,6 +627,7 @@ export class RoomDetailInformationPage extends React.Component {
               totalPeople,
               currentPeople,
               currentMeetingLogId,
+              passwordRoom,
               price,
               userListId,
             } = roomDetailDataModified.toJS();
@@ -656,6 +636,7 @@ export class RoomDetailInformationPage extends React.Component {
             room.name = name.value;
             room.isRunning = isRunning.value;
             room.description = description.value;
+            room.passwordRoom = passwordRoom.value;
             room.totalPeople = totalPeople.value;
             room.currentPeople = currentPeople.value;
             room.price = price.value;
@@ -781,7 +762,7 @@ export class RoomDetailInformationPage extends React.Component {
     this.props.onInitIndexRoomDetail(this.props.match.params.id);
   }
 
-  handleReciveMessageMqtt = (message) => {
+  handleReciveMessageMqtt = async (message) => {
     const messageQueue = JSON.parse(message.payloadString);
     const { userId } = messageQueue;
     const currentUser = localstoreUtilites.getUserIdFromLocalStorage();
@@ -823,6 +804,7 @@ export class RoomDetailInformationPage extends React.Component {
           this.showEndGame(messageQueue.data.action);
           this.setState({
             nFTListChoose: [],
+            loadingCreateBattle: false,
           });
         }
         if (messageQueue.data.action.id === 5) {
@@ -850,9 +832,28 @@ export class RoomDetailInformationPage extends React.Component {
           );
           if (messageQueue.data.action.depositDone) {
             this.handleStart();
+            const balance = await this.state.provider.getBalance(
+              this.state.account,
+            );
+            this.props.onUpdateBalance(
+              Number(localstoreUtilites.getUserIdFromLocalStorage()),
+              ethers.utils.formatEther(balance),
+            );
           }
         }
         if (messageQueue.data.action.id === 9) {
+          const balance = await this.state.provider.getBalance(
+            this.state.account,
+          );
+          if (
+            this.state.winner.id ===
+            Number(localstoreUtilites.getUserIdFromLocalStorage())
+          ) {
+            this.props.onUpdateBalance(
+              this.state.winner.id,
+              ethers.utils.formatEther(balance),
+            );
+          }
           this.setState({
             inReceiveReward: false,
             winner: null,
@@ -923,6 +924,26 @@ export class RoomDetailInformationPage extends React.Component {
             );
           }
         }
+        if (messageQueue.data.action.id === 12) {
+          this.setState({
+            settingRoomModal: false,
+          });
+          toast.success(
+            <div style={{ color: 'white' }}>{textUpdateRoom()}</div>,
+            {
+              position: toast.POSITION.TOP_RIGHT,
+              autoClose: 4000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: 'dark',
+            },
+          );
+
+          this.props.onInitIndexRoomDetail(this.props.match.params.id);
+        }
         if (messageQueue.data.messageType === 'error') {
           this.props.onInitIndexRoomDetail(this.props.match.params.id);
         } else {
@@ -961,6 +982,7 @@ export class RoomDetailInformationPage extends React.Component {
       description,
       totalPeople,
       currentPeople,
+      passwordRoom,
       currentMeetingLogId,
       price,
       userListId,
@@ -971,6 +993,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1037,6 +1060,7 @@ export class RoomDetailInformationPage extends React.Component {
       description,
       totalPeople,
       currentPeople,
+      passwordRoom,
       currentMeetingLogId,
       price,
       userListId,
@@ -1047,6 +1071,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1099,6 +1124,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       currentMeetingLogId,
@@ -1111,6 +1137,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1163,6 +1190,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       currentMeetingLogId,
@@ -1175,6 +1203,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1222,7 +1251,7 @@ export class RoomDetailInformationPage extends React.Component {
       },
     });
   };
-  doneReceiveReward = (gameId) => {
+  doneReceiveReward = (gameId, randomItems) => {
     const { userList, roomDetailDataModified } = this.props;
     const { nFTListChoose, dataRoomInfo } = this.state;
     const {
@@ -1230,6 +1259,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       currentMeetingLogId,
@@ -1242,6 +1272,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1274,6 +1305,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       price,
@@ -1306,6 +1338,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1384,6 +1417,17 @@ export class RoomDetailInformationPage extends React.Component {
       }
     });
 
+    // list use nft
+    let idItemList = [];
+    nFTListChoose.map((i) => {
+      if (i.idItemUser) {
+        idItemList.push(i.idItemUser);
+      }
+    });
+    if (idItemList.length > 0) {
+      this.props.putUseItemNFT(idItemList);
+    }
+
     this.startTheGame(newNFT);
     this.setState({
       start: false,
@@ -1426,6 +1470,7 @@ export class RoomDetailInformationPage extends React.Component {
             index: nFTListChoose.length,
             image: nft.image,
             mana: nft.mana,
+            idItemUser: nft.idItemUser,
           });
         } else {
           newNFT.push(i);
@@ -1449,6 +1494,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       price,
@@ -1459,6 +1505,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -1511,6 +1558,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       price,
@@ -1770,6 +1818,7 @@ export class RoomDetailInformationPage extends React.Component {
         room.name = name.value;
         room.isRunning = isRunning.value;
         room.description = description.value;
+        room.passwordRoom = passwordRoom.value;
         room.totalPeople = totalPeople.value;
         room.currentPeople = currentPeople.value;
         room.price = price.value;
@@ -1936,6 +1985,7 @@ export class RoomDetailInformationPage extends React.Component {
         room.name = name.value;
         room.isRunning = isRunning.value;
         room.description = description.value;
+        room.passwordRoom = passwordRoom.value;
         room.totalPeople = totalPeople.value;
         room.currentPeople = currentPeople.value;
         room.price = price.value;
@@ -2050,6 +2100,7 @@ export class RoomDetailInformationPage extends React.Component {
         name,
         isRunning,
         description,
+        passwordRoom,
         totalPeople,
         currentPeople,
         price,
@@ -2176,6 +2227,7 @@ export class RoomDetailInformationPage extends React.Component {
         room.name = name.value;
         room.isRunning = isRunning.value;
         room.description = description.value;
+        room.passwordRoom = passwordRoom.value;
         room.totalPeople = totalPeople.value;
         room.currentPeople = currentPeople.value;
         room.price = price.value;
@@ -2299,6 +2351,7 @@ export class RoomDetailInformationPage extends React.Component {
       description,
       totalPeople,
       currentPeople,
+      passwordRoom,
       price,
       userListId,
     } = roomDetailDataModified.toJS();
@@ -2311,6 +2364,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -2450,6 +2504,7 @@ export class RoomDetailInformationPage extends React.Component {
       description,
       totalPeople,
       currentPeople,
+      passwordRoom,
       price,
       userListId,
     } = roomDetailDataModified.toJS();
@@ -2462,6 +2517,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -2507,6 +2563,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       price,
@@ -2521,6 +2578,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -2556,6 +2614,7 @@ export class RoomDetailInformationPage extends React.Component {
       isRunning,
       description,
       totalPeople,
+      passwordRoom,
       currentPeople,
       price,
       userListId,
@@ -2569,6 +2628,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -2598,6 +2658,7 @@ export class RoomDetailInformationPage extends React.Component {
       },
     });
   };
+
   handleAgreeAddFriend = (action) => {
     const { roomDetailDataModified, userList } = this.props;
     const { dataRoomInfo } = this.state;
@@ -2606,6 +2667,7 @@ export class RoomDetailInformationPage extends React.Component {
       name,
       isRunning,
       description,
+      passwordRoom,
       totalPeople,
       currentPeople,
       price,
@@ -2620,6 +2682,7 @@ export class RoomDetailInformationPage extends React.Component {
       room.name = name.value;
       room.isRunning = isRunning.value;
       room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
       room.totalPeople = totalPeople.value;
       room.currentPeople = currentPeople.value;
       room.price = price.value;
@@ -2645,6 +2708,57 @@ export class RoomDetailInformationPage extends React.Component {
     });
   };
 
+  openSettingRoom = () => {
+    this.setState({
+      settingRoomModal: true,
+    });
+  };
+  closeSettingRoom = () => {
+    this.setState({
+      settingRoomModal: false,
+    });
+  };
+
+  updateSettingRoom = () => {
+    const { roomDetailDataModified, userList } = this.props;
+    const { dataRoomInfo } = this.state;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      passwordRoom,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+
+    const msgId = create_UUID();
+
+    let room = {};
+    room.id = id.value;
+    room.name = name.value;
+    room.isRunning = isRunning.value;
+    room.description = description.value;
+    room.passwordRoom = passwordRoom.value;
+    room.totalPeople = totalPeople.value;
+    room.currentPeople = currentPeople.value;
+    room.price = price.value;
+    room.userListId = userListId.value;
+
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 12,
+        },
+      },
+    });
+  };
   render() {
     const {
       roomDetailIdSelected,
@@ -2684,17 +2798,15 @@ export class RoomDetailInformationPage extends React.Component {
       classes,
       meetingLogsDetailSelector,
       friendListDataSelector,
+      itemNftUserDataSelector,
     } = this.props;
     const {
       newMessage,
       showEmojiPicker,
       unReadChat,
       provider,
-      signer,
-      contract,
       gameId,
     } = this.state;
-    console.log(friendListDataSelector);
     const {
       id,
       name,
@@ -2702,6 +2814,7 @@ export class RoomDetailInformationPage extends React.Component {
       description,
       totalPeople,
       currentPeople,
+      passwordRoom,
       price,
       userListId,
     } = roomDetailDataModified.toJS();
@@ -2735,6 +2848,18 @@ export class RoomDetailInformationPage extends React.Component {
     const checkOwnerRoom =
       userOwnerRoom && userOwnerRoom.ownerRoom === id.value ? true : false;
     console.log(meetingLogsDetailSelector);
+
+    let powerChoose = [];
+    if (itemNftUserDataSelector.length > 0) {
+      power.map((i) => {
+        const checkItem = itemNftUserDataSelector.find(
+          (el) => el.aliasId === i.id,
+        );
+        if (checkItem) {
+          powerChoose.push({ ...i, idItemUser: checkItem.id });
+        }
+      });
+    }
 
     return (
       <div className="room-game">
@@ -2984,6 +3109,35 @@ export class RoomDetailInformationPage extends React.Component {
             )}
           </FormattedMessage>
         </div>
+        {checkOwnerRoom ? (
+          <div style={{ cursor: 'pointer' }}>
+            <FormattedMessage {...messages.setting}>
+              {(message) => (
+                <Tooltip title={message}>
+                  <IconButton
+                    aria-owns="menu-appbar"
+                    aria-haspopup="true"
+                    id="logoutBtn"
+                    onClick={() => this.openSettingRoom()}
+                    color="inherit"
+                    title="Logout"
+                    style={{
+                      position: 'absolute',
+                      top: 135,
+                      left: 15,
+                      background: '#00B5AD',
+                      color: 'white',
+                      cursor: 'pointer',
+                      zIndex: 10,
+                    }}
+                  >
+                    <Settings fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </FormattedMessage>
+          </div>
+        ) : null}
         {cardListClick.length > 0 ? (
           <CardAnimation
             x={positionAttach.x}
@@ -2992,6 +3146,156 @@ export class RoomDetailInformationPage extends React.Component {
             runCountTimePlayer={() => this.runCountTimePlayer()}
           />
         ) : null}
+
+        <ModalMaterialUi
+          shapeModal={{
+            width: '40%',
+            top: '10%',
+            left: '30%',
+            padding: 0,
+            // overflow: 'hidden',
+            borderRadius: 5,
+            background: 'black',
+            color: 'white',
+            opacity: 1,
+          }}
+          onCloseModal={() => this.closeSettingRoom()}
+          isOpenModal={this.state.settingRoomModal}
+        >
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <h2>
+              <FormattedMessage {...messages.setting} />
+            </h2>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.name} />
+                <input
+                  type="text"
+                  name="name"
+                  value={name.value}
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                />
+              </label>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.totalPeople} />
+                <input
+                  type="number"
+                  value={totalPeople.value}
+                  name="totalPeople"
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                  max={4}
+                />
+              </label>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.price} />
+                <input
+                  type="text"
+                  name="price"
+                  value={price.value}
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                />
+              </label>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.passwordRoom} />
+                <input
+                  type="text"
+                  name="passwordRoom"
+                  value={passwordRoom.value}
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                />
+              </label>
+            </div>
+            <button
+              onClick={() => this.closeSettingRoom()}
+              style={{
+                marginTop: 20,
+                padding: '10px 20px',
+                borderRadius: 5,
+                fontWeight: 'bold',
+              }}
+            >
+              <FormattedMessage {...messages.btnCancel} />
+            </button>
+            <button
+              onClick={() => this.updateSettingRoom()}
+              style={{
+                marginTop: 20,
+                padding: '10px 20px',
+                borderRadius: 5,
+                fontWeight: 'bold',
+              }}
+            >
+              <FormattedMessage {...messages.btnSave} />
+            </button>
+          </div>
+        </ModalMaterialUi>
+
         <ModalMaterialUi
           shapeModal={{
             width: '70%',
@@ -3011,7 +3315,11 @@ export class RoomDetailInformationPage extends React.Component {
           isOpenModal={winner !== null ? true : false}
         >
           <Winner
-            doneReceiveReward={(gameId) => this.doneReceiveReward(gameId)}
+            postAssignItemNFT={this.props.postAssignItemNFT}
+            itemSystemSelector={this.props.itemSystemSelector}
+            doneReceiveReward={(gameId, randomItems) =>
+              this.doneReceiveReward(gameId, randomItems)
+            }
             gameId={gameId}
             handleReceiveReward={() => this.handleReceiveReward()}
             closeShowWinner={() => this.setState({ winner: null })}
@@ -3049,7 +3357,7 @@ export class RoomDetailInformationPage extends React.Component {
             />
             <FormattedMessage {...messages.chooseItem} />
             <br />
-            {power.map((item) => (
+            {powerChoose.map((item) => (
               <React.Fragment>
                 {item.name ? (
                   <Tooltip
@@ -3104,27 +3412,46 @@ export class RoomDetailInformationPage extends React.Component {
           alt=""
         /> */}
         <Header loginByAddress={() => null} history={history} />
-        <div className="room-game-logo">
+        <div className="room-game-logo room-game-text">
           <img src={imgAttack} alt="" />
         </div>
-        <div className="room-detail-info">
-          <Typography
-            style={{ fontWeight: 'bold', fontSize: 15, color: 'white' }}
+        <div className="room-detail-info room-game-text">
+          <p
+            className="room-game-text"
+            style={{ fontWeight: 'bold', fontSize: 15 }}
           >
             {name.value}
-          </Typography>
-          <Typography
-            style={{ fontWeight: 'bold', fontSize: 10, color: 'white' }}
+          </p>
+          <p
+            className="room-game-text"
+            style={{
+              fontWeight: 'bold',
+              fontSize: 15,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 5,
+            }}
           >
             <FormattedMessage {...messages.price} />
-            :&nbsp; {price.value}TBNB
-          </Typography>
-          <Typography
-            style={{ fontWeight: 'bold', fontSize: 10, color: 'white' }}
+            :&nbsp; {price.value}{' '}
+            <img
+              src={imgbnb}
+              style={{
+                width: 15,
+                height: 15,
+                boxShadow: 'rgb(231, 197, 38) 0px 0px 15px 0px',
+                borderRadius: '100%',
+              }}
+            />
+          </p>
+          <p
+            className="room-game-text"
+            style={{ fontWeight: 'bold', fontSize: 10, height: 0 }}
           >
             <People />
             {currentPeople.value}/{totalPeople.value}
-          </Typography>
+          </p>
         </div>
         {isRunning.value ? (
           <div className="game-play">
@@ -4037,8 +4364,6 @@ export class RoomDetailInformationPage extends React.Component {
             checkOwnerRoom={checkOwnerRoom}
             gameId={gameId}
             roomDetailDataModified={roomDetailDataModified.toJS()}
-            contract={contract}
-            signer={signer}
             provider={provider}
             createGameDone={(gameId) => this.createGameDone(gameId)}
             meetingLogsDetailSelector={meetingLogsDetailSelector}
@@ -4076,6 +4401,12 @@ RoomDetailInformationPage.propTypes = {
   friendListDataSelector: PropTypes.array,
   onGetFriendUserId: PropTypes.func,
   onAddFriendUser: PropTypes.func,
+  onUpdateBalance: PropTypes.func,
+  onGetItemNft: PropTypes.func,
+  onGetItemListSystem: PropTypes.func,
+  putUseItemNFT: PropTypes.func,
+  itemNftUserDataSelector: PropTypes.array,
+  itemSystemSelector: PropTypes.array,
 
   loading: PropTypes.bool,
   history: PropTypes.object,
@@ -4117,6 +4448,16 @@ function mapDispatchToProps(dispatch) {
     onGetFriendUserId: (userId) => dispatch(getFriendUserId(userId)),
     onAddFriendUser: (userId1, userId2) =>
       dispatch(onAddFriend(userId1, userId2)),
+
+    onUpdateBalance: (userId, balance) =>
+      dispatch(updateBalance(userId, balance)),
+
+    onGetItemNft: () => dispatch(getItemNft()),
+    putUseItemNFT: (idItemList) => dispatch(putUseItemNFT(idItemList)),
+    postAssignItemNFT: (idItemNftId) =>
+      dispatch(postAssignItemNFT(idItemNftId)),
+
+    onGetItemListSystem: () => dispatch(getItemListSystem()),
   };
 }
 
@@ -4131,6 +4472,8 @@ const mapStateToProps = createStructuredSelector({
   roomDetailDataModified: getRoomDetailDataModified(),
   meetingLogsDetailSelector: getMeetingLogsDetailSelector(),
   friendListDataSelector: getFriendListDataSelector(),
+  itemNftUserDataSelector: getItemNftUserDataSelector(),
+  itemSystemSelector: getItemSystemSelector(),
 });
 
 const withReducer = injectReducer({ key: 'roomDetail', reducer });

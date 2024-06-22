@@ -32,6 +32,7 @@ import {
   SET_WORKTYPES_LIST_MARKET,
   UPDATE_AVATAR,
   SET_STORE_LIST_WAITING,
+  SET_USER_LIST_MARKET,
 } from './constants.js';
 import { mergeMetaPaging, mergeState } from './functions.js';
 
@@ -53,6 +54,7 @@ export const initialState = fromJS({
   },
 
   storeList: [],
+  userList: [],
 
   ajaxSuccess: { value: false, message: '' },
   isRedirect: { value: false, route: '' },
@@ -82,7 +84,8 @@ function marketReducer(state = initialState, action) {
 
     case SET_STORE_LIST_WAITING:
       return state.set('storeList', action.storeList);
-
+    case SET_USER_LIST_MARKET:
+      return state.set('userList', action.userList);
     case DELETE_MULTIES_MARKET_SUCCESS:
     case DELETE_MARKET_SUCCESS:
     case UPDATE_MARKET_SUCCESS:

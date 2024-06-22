@@ -44,6 +44,8 @@ import {
   UPDATE_AVATAR,
   SET_STORE_LIST_WAITING,
   SET_USER_ANALYSIS,
+  GET_BALANCE_CHART,
+  GET_BALANCE_CHART_SUCCESS,
 } from './constants';
 
 /**
@@ -298,5 +300,20 @@ export function setUserData(userList) {
   return {
     type: SET_USER_ANALYSIS,
     userList,
+  };
+}
+
+export function getBalanceChart(userId, startDate, endDate) {
+  return {
+    type: GET_BALANCE_CHART,
+    userId,
+    startDate,
+    endDate,
+  };
+}
+export function getBalanceChartSuccess(balanceChart) {
+  return {
+    type: GET_BALANCE_CHART_SUCCESS,
+    balanceChart,
   };
 }

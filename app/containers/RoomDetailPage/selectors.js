@@ -25,6 +25,14 @@ const getFriendListDataSelector = () =>
   createSelector(selectRoomDetail, (roomDetailState) =>
     roomDetailState.get('friendList'),
   );
+const getItemNftUserDataSelector = () =>
+  createSelector(selectRoomDetail, (roomDetailState) =>
+    roomDetailState.get('itemNftUser'),
+  );
+const getItemSystemSelector = () =>
+  createSelector(selectRoomDetail, (roomDetailState) =>
+    roomDetailState.get('itemListSystem'),
+  );
 
 const getRoomDetailDataModified = () =>
   createSelector(selectRoomDetail, (roomDetailState) =>
@@ -58,4 +66,6 @@ export {
   getUserListData,
   getMeetingLogsDetailSelector,
   getFriendListDataSelector,
+  getItemNftUserDataSelector,
+  getItemSystemSelector,
 };

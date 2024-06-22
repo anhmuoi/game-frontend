@@ -42,10 +42,13 @@ export const initialState = fromJS({
     id: { value: 0, errorMessage: false },
     name: { value: '', errorMessage: false },
     isRunning: { value: false, errorMessage: false },
+    default: { value: true, errorMessage: false },
     description: { value: '', errorMessage: false },
+    passwordRoom: { value: '', errorMessage: false },
     totalPeople: { value: 0, errorMessage: false },
     currentPeople: { value: 0, errorMessage: false },
     price: { value: 0, errorMessage: false },
+    userListId: { value: [], errorMessage: false },
   },
 
   storeList: [],

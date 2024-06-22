@@ -36,6 +36,8 @@ import {
   GET_MEETING_LOGS_BY_ID_SUCCESS,
   GET_FRiEND_BY_USERID_SUCCESS,
   ON_ADD_FRIEND_SUCCESS,
+  GET_ITEM_NFT_SUCCESS,
+  GET_ITEM_LIST_SYSTEM_SUCCESS,
 } from './constants.js';
 import { mergeMetaPaging, mergeState } from './functions.js';
 
@@ -46,6 +48,8 @@ export const initialState = fromJS({
     id: { value: 0, errorMessage: false },
     name: { value: '', errorMessage: false },
     isRunning: { value: false, errorMessage: false },
+    default: { value: false, errorMessage: false },
+    passwordRoom: { value: '', errorMessage: false },
     description: { value: '', errorMessage: false },
     totalPeople: { value: 0, errorMessage: false },
     currentPeople: { value: 0, errorMessage: false },
@@ -58,6 +62,8 @@ export const initialState = fromJS({
   storeList: [],
   userList: [],
   friendList: [],
+  itemNftUser: [],
+  itemListSystem: [],
 
   ajaxSuccess: { value: false, message: '' },
   isRedirect: { value: false, route: '' },
@@ -71,6 +77,7 @@ export const initialState = fromJS({
     pageNumber: 1,
     pageSize: 25,
   },
+  
 });
 
 function roomDetailReducer(state = initialState, action) {
@@ -85,6 +92,8 @@ function roomDetailReducer(state = initialState, action) {
         fromJS(mergeMetaPaging(state.toJS().metaPaging, action.meta)),
       );
 
+    case GET_ITEM_LIST_SYSTEM_SUCCESS:
+      return state.set('itemListSystem', action.itemListSystem);
     case SET_STORE_LIST_WAITING:
       return state.set('storeList', action.storeList);
     case GET_MEETING_LOGS_BY_ID_SUCCESS:
@@ -93,6 +102,8 @@ function roomDetailReducer(state = initialState, action) {
       return state.set('userList', action.userList);
     case GET_FRiEND_BY_USERID_SUCCESS:
       return state.set('friendList', action.friendList);
+    case GET_ITEM_NFT_SUCCESS:
+      return state.set('itemNftUser', action.itemNftUser);
 
     case DELETE_MULTIES_ROOM_DETAIL_SUCCESS:
     case DELETE_ROOM_DETAIL_SUCCESS:

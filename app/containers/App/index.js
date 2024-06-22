@@ -19,6 +19,7 @@ import styled from 'styled-components';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import ResetPassword from 'containers/ResetPasswordPage/Loadable';
 import JoinGroup from 'containers/JoinGroupPage/Loadable';
+import AddFriend from 'containers/AddFriendPage/Loadable';
 import Game from 'containers/GamePage/Loadable';
 import { LoadRoleSettingPage } from 'containers/RoleSetting/Loadable';
 import { PAGE_TITLE } from '../../utils/constants';
@@ -103,6 +104,11 @@ export default function App() {
                 exact
                 path="/join-group/:userIdRequest/:departmentId/:codeHash"
                 component={JoinGroup}
+              />
+              <Route
+                exact
+                path="/add-friend/:userId1/:userId2/:codeHash"
+                component={AddFriend}
               />
               <Route exact path="/game" component={Game} />
               <PrivateRoute

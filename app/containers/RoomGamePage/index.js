@@ -1,5 +1,11 @@
 /* eslint-disable jsx-a11y/alt-text */
-import { AppBar, IconButton, Tooltip, withStyles } from '@material-ui/core';
+import {
+  AppBar,
+  Button,
+  IconButton,
+  Tooltip,
+  withStyles,
+} from '@material-ui/core';
 import { makeSelectError, makeSelectLoading } from 'containers/App/selectors';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -13,9 +19,13 @@ import reducer from './reducer.js';
 import saga from './saga.js';
 import { mainStyle } from './styles.js';
 import { enqueueSnackbar } from 'notistack';
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import imgAttack from 'images/people/attack.png';
+import imgbnb from 'images/bnb.svg';
+import { Icon } from '@iconify/react';
+import ModalMaterialUi from 'components/Modal';
+
 import { FormattedMessage } from 'react-intl';
 import { API_COLUMNS, MQTT_TYPE } from '../../utils/constants.js';
 import { localstoreUtilites } from '../../utils/persistenceData.js';
@@ -50,11 +60,16 @@ import Sidebar from './Sidebar.js';
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
 import { Web3ReactProvider, InjectedConnector } from '@web3-react/core';
 import { ethers } from 'ethers';
-import { balanceNotEnough } from '../../utils/translation.js';
+import {
+  balanceNotEnough,
+  gameIsRunning,
+  nameEmpty,
+  nameRoomExist,
+  passwordIncorrect,
+  totalPeopleCondition,
+} from '../../utils/translation.js';
 
-
-
-toast.configure()
+toast.configure();
 export const headers = [
   {
     id: 'name',
@@ -91,10 +106,15 @@ export class RoomGameInformationPage extends React.Component {
     openMenu: false,
     collapse: true,
     toggle: false,
+    checkPassModal: false,
+    roomSelected: null,
+    passwordRoomInGame: '',
 
     account: null,
     balance: null,
     message: '',
+
+    openModalCreateRoom: false,
   };
 
   componentDidMount() {
@@ -252,6 +272,12 @@ export class RoomGameInformationPage extends React.Component {
             window.location.href = `${window.location.href}/${messageQueue.data.room.id}`;
           }
         }
+      }
+      if (
+        messageQueue.data.action.id === 13 &&
+        Number(messageQueue.data.userId) === Number(currentUser)
+      ) {
+        this.goToRoom(messageQueue.data.room);
       } else {
         this.getDataRoomGameTable([], [], null);
       }
@@ -268,7 +294,7 @@ export class RoomGameInformationPage extends React.Component {
         draggable: true,
         progress: undefined,
         theme: 'dark',
-      })
+      });
       return;
     }
     const msgId = create_UUID();
@@ -284,6 +310,53 @@ export class RoomGameInformationPage extends React.Component {
         },
       },
     });
+  };
+
+  checkPassword = (room) => {
+    if (room.isRunning) {
+      toast.error(gameIsRunning(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    } else if (room.passwordRoom) {
+      this.setState({
+        checkPassModal: true,
+        roomSelected: room,
+      });
+    } else {
+      this.goToRoom(room);
+    }
+  };
+  closeCheckPass = () => {
+    this.setState({
+      checkPassModal: false,
+      roomSelected: null,
+      passwordRoomInGame: '',
+    });
+  };
+  saveCheckPassword = () => {
+    if (
+      this.state.roomSelected.passwordRoom === this.state.passwordRoomInGame
+    ) {
+      this.goToRoom(this.state.roomSelected);
+    } else {
+      toast.error(passwordIncorrect(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
   };
 
   openMenu = () => {
@@ -307,6 +380,107 @@ export class RoomGameInformationPage extends React.Component {
     });
   };
 
+  handleCreateRoom = () => {
+    this.setState({
+      openModalCreateRoom: true,
+    });
+  };
+  closeCreateRoom = () => {
+    this.setState({
+      openModalCreateRoom: false,
+    });
+  };
+
+  onCreateRoom = () => {
+    const { roomGameDataModified, datas } = this.props;
+
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      passwordRoom,
+      price,
+      userListId,
+    } = roomGameDataModified.toJS();
+
+    if (datas.find((i) => i.name === name.value)) {
+      toast.error(nameRoomExist(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    } else if (Number(price.value) > Number(this.state.balance)) {
+      toast.error(balanceNotEnough(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+      return;
+    } else if (!name.value) {
+      toast.error(nameEmpty(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+      return;
+    } else if (totalPeople.value<2) {
+      toast.error(totalPeopleCondition(), {
+        position: toast.POSITION.TOP_RIGHT,
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+      return;
+    } else {
+      const msgId = create_UUID();
+
+      let room = {};
+      room.id = id.value;
+      room.name = name.value;
+      room.isRunning = isRunning.value;
+      room.description = description.value;
+      room.passwordRoom = passwordRoom.value;
+      room.totalPeople = totalPeople.value;
+      room.currentPeople = currentPeople.value;
+      room.price = price.value;
+      room.userListId = userListId.value;
+
+      window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+        msgId: msgId,
+        type: MQTT_TYPE.EXPORT_MEMBER.type,
+        data: {
+          room: room,
+          userId: localstoreUtilites.getUserIdFromLocalStorage(),
+          action: {
+            id: 13,
+          },
+        },
+      });
+    }
+  };
+
   render() {
     const {
       roomGameIdSelected,
@@ -318,6 +492,10 @@ export class RoomGameInformationPage extends React.Component {
       account,
       balance,
       message,
+      roomSelected,
+      checkPassModal,
+      passwordRoomInGame,
+      openModalCreateRoom,
     } = this.state;
 
     console.log(account, balance, message);
@@ -334,6 +512,18 @@ export class RoomGameInformationPage extends React.Component {
       history,
       storeList,
     } = this.props;
+
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      passwordRoom,
+      price,
+      userListId,
+    } = roomGameDataModified.toJS();
 
     return (
       <div className="room-game">
@@ -361,18 +551,325 @@ export class RoomGameInformationPage extends React.Component {
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
         </div>
+        {roomSelected ? (
+          <ModalMaterialUi
+            shapeModal={{
+              width: '40%',
+              top: '10%',
+              left: '30%',
+              padding: 0,
+              // overflow: 'hidden',
+              borderRadius: 5,
+              background: 'black',
+              color: 'white',
+              opacity: 1,
+            }}
+            onCloseModal={() => this.closeCheckPass()}
+            isOpenModal={checkPassModal}
+          >
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <h2>{roomSelected.name}</h2>
 
-        <div className="room-game-list">
+              <div style={{ margin: '10px 0' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    margin: '0 auto',
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    width: '50%',
+                  }}
+                >
+                  <FormattedMessage {...messages.passwordRoom} />
+                  <input
+                    type="text"
+                    name="passwordRoomInGame"
+                    value={passwordRoomInGame}
+                    onChange={(e) =>
+                      this.setState({
+                        passwordRoomInGame: e.target.value,
+                      })
+                    }
+                    style={{
+                      marginLeft: 10,
+                      padding: 5,
+                      borderRadius: 3,
+                      background: 'white',
+                      color: 'black',
+                    }}
+                  />
+                </label>
+              </div>
+              <button
+                onClick={() => this.closeCheckPass()}
+                style={{
+                  marginTop: 20,
+                  padding: '10px 20px',
+                  borderRadius: 5,
+                  fontWeight: 'bold',
+                }}
+              >
+                <FormattedMessage {...messages.btnCancel} />
+              </button>
+              <button
+                onClick={() => this.saveCheckPassword()}
+                style={{
+                  marginTop: 20,
+                  padding: '10px 20px',
+                  borderRadius: 5,
+                  fontWeight: 'bold',
+                }}
+              >
+                <FormattedMessage {...messages.confirm} />
+              </button>
+            </div>
+          </ModalMaterialUi>
+        ) : null}
+
+        <ModalMaterialUi
+          shapeModal={{
+            width: '40%',
+            top: '10%',
+            left: '30%',
+            padding: 0,
+            // overflow: 'hidden',
+            borderRadius: 5,
+            background: 'black',
+            color: 'white',
+            opacity: 1,
+          }}
+          onCloseModal={() => this.closeCreateRoom()}
+          isOpenModal={openModalCreateRoom}
+        >
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <h2>
+              <FormattedMessage {...messages.createRoom} />
+            </h2>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.name} />
+                <input
+                  type="text"
+                  name="name"
+                  value={name.value}
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                />
+              </label>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.totalPeople} />
+                <input
+                  type="number"
+                  value={totalPeople.value}
+                  name="totalPeople"
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                  max={4}
+                />
+              </label>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.price} />
+                <input
+                  type="text"
+                  name="price"
+                  value={price.value}
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                />
+              </label>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  margin: '0 auto',
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  width: '70%',
+                }}
+              >
+                <FormattedMessage {...messages.passwordRoom} />
+                <input
+                  type="text"
+                  name="passwordRoom"
+                  value={passwordRoom.value}
+                  onChange={onChangeTextField}
+                  style={{
+                    marginLeft: 10,
+                    padding: 5,
+                    borderRadius: 3,
+                    background: 'white',
+                    color: 'black',
+                  }}
+                />
+              </label>
+            </div>
+            <button
+              onClick={() => this.closeCreateRoom()}
+              style={{
+                marginTop: 20,
+                padding: '10px 20px',
+                borderRadius: 5,
+                fontWeight: 'bold',
+              }}
+            >
+              <FormattedMessage {...messages.btnCancel} />
+            </button>
+            <button
+              onClick={() => this.onCreateRoom()}
+              style={{
+                marginTop: 20,
+                padding: '10px 20px',
+                borderRadius: 5,
+                fontWeight: 'bold',
+              }}
+            >
+              <FormattedMessage {...messages.btnSave} />
+            </button>
+          </div>
+        </ModalMaterialUi>
+
+        <div
+          className="room-game-list"
+          style={{ marginTop: 150, position: 'relative' }}
+        >
+          <Button
+            style={{
+              background: '#00B5AD',
+              color: 'white',
+              display: 'flex',
+              gap: 10,
+              position: 'absolute',
+              right: -20,
+              top: -210,
+              borderRadius: 30,
+              height: 42,
+            }}
+            onClick={() => this.handleCreateRoom()}
+          >
+            <div style={{ marginRight: 10, fontWeight: 'bold' }}>
+              <FormattedMessage {...messages.createRoom} />
+            </div>
+            <div>
+              <Icon icon="oui:ml-create-single-metric-job" fontSize="30px" />
+            </div>
+          </Button>
           {datas.map((room, key) => (
             <div
               key={key}
               className="room-game-item"
-              onClick={() => this.goToRoom(room)}
+              onClick={() => this.checkPassword(room)}
             >
-              <p>{room.name}</p>
+              {room.passwordRoom || room.isRunning ? (
+                <div
+                  style={{
+                    height: 30,
+                    display: 'flex',
+                    gap: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {room.passwordRoom ? (
+                    <Icon
+                      icon="teenyicons:password-solid"
+                      fontSize="30px"
+                      style={{
+                        color: '#e7c526',
+                      }}
+                    />
+                  ) : null}
+                  {room.isRunning ? (
+                    <Icon
+                      icon="mdi:cards-playing-outline"
+                      fontSize="35px"
+                      style={{
+                        color: 'rgb(0 227 255)',
+                      }}
+                    />
+                  ) : null}
+                </div>
+              ) : (
+                <div style={{ height: 30 }}></div>
+              )}
+              <p
+                className="room-game-text"
+                style={{
+                  boxShadow: '0px -5px 44px 25px #e7c526',
+                  height: 30,
+                  padding: 9,
+                }}
+              >
+                {room.name}
+              </p>
               <img className="room-game-img" alt="" src={imgAttack} />
-              <p>{room.price} TBNB</p>
-              <p>
+              <p
+                className="room-game-text"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                }}
+              >
+                {room.price}{' '}
+                <img
+                  src={imgbnb}
+                  style={{
+                    width: 25,
+                    height: 25,
+                    boxShadow: 'rgb(231, 197, 38) 0px 0px 15px 0px',
+                    borderRadius: '100%',
+                  }}
+                />
+              </p>
+              <p className="room-game-text">
                 {room.currentPeople}/{room.totalPeople}
               </p>
             </div>

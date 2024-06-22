@@ -83,3 +83,29 @@
     top: 20px !important;
     color: black !important;
 }
+
+.filter {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: end;
+    gap: 20px;
+    padding-right: 20px;
+}
+.filter-date {
+    width: 150px;
+    height: 50px;
+    border-radius: 20px;
+    border: 1px solid #00B5AD;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    
+}
+.filter-date-active {
+    background: #00B5AD;
+}

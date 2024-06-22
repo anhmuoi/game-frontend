@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
@@ -58,6 +58,7 @@ import ApiClient from './api';
 import { battlegrounds } from '../../images/people/index.js';
 import { useWeb3React } from '@web3-react/core';
 import Header from '../../components/Header';
+import { ethers } from 'ethers';
 const styles = (theme) => ({
   formWidth: {
     maxWidth: '100%',
@@ -163,23 +164,21 @@ const getModalSize = () => {
 };
 
 const AccountInfo = ({ loginByAddress, history }) => {
-  const { account } = useWeb3React();
-  // const [toggle, setToggle] = useState(false)
-  console.log(account);
-  useEffect(() => {
+  const handleLoginByAddress = async (account, balance) => {
     if (account) {
-      loginByAddress(account);
-    }
-  }, [account]);
-  const handleLoginByAddress = async () => {
-    if (account) {
-      const res = await loginByAddress(account);
+      console.log(account, balance);
+      const res = await loginByAddress(account, balance);
     }
   };
 
   return (
     <div style={{ zIndex: 11 }}>
-      <Header loginByAddress={() => handleLoginByAddress()} history={history} />
+      <Header
+        loginByAddress={(account, balance) =>
+          handleLoginByAddress(account, balance)
+        }
+        history={history}
+      />
     </div>
   );
 };
@@ -346,13 +345,14 @@ class SignIn extends React.Component {
     this.setState({ rememberMe: event.target.checked });
   };
 
-  handleLoginByAddress = async (address) => {
+  handleLoginByAddress = async (address, balance) => {
     this.setState({
       username: address,
       password: '123456789',
     });
 
-    this.login(address);
+    await ApiClient.loginByAddress({ address, balance });
+    await this.login();
   };
 
   render() {

@@ -30,10 +30,13 @@ export const mapModelRoomManageUiToApi = (roomManageUi) => {
   const roomManageClone = {
     name: '',
     isRunning: false,
+    default: true,
     description: '',
     totalPeople: 0,
     currentPeople: 0,
     price: 0,
+    passwordRoom: '',
+    userListId: [],
   };
 
   if (roomManageUi) {

@@ -178,4 +178,12 @@ export default defineMessages({
     id: `demasterpro.containers.rankSystem.rank`,
     defaultMessage: `Rank`,
   },
+  previous: {
+    id: `${scope}.previous`,
+    defaultMessage: `Previous`,
+  },
+  next: {
+    id: `${scope}.next`,
+    defaultMessage: `Next`,
+  },
 });

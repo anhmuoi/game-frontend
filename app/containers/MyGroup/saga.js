@@ -42,6 +42,7 @@ import {
   DELETE_MULTIES_FRIEND_SUCCESS,
   USER_OUT_GROUP,
   USER_OUT_GROUP_SUCCESS,
+  REQUEST_ADD_FRIEND,
 } from './constants.js';
 
 import { convertShowDateTime, formatDateToSend } from '../../utils/utils.js';
@@ -352,6 +353,29 @@ export function* userOutGroup(action) {
   }
 }
 
+export function* requestAddFriend(action) {
+  const url = `${URL_DOMAIN}/friends/add-friend?userId1=${action.userId1}&userId2=${action.userId2}`;
+
+  try {
+    const res = yield call(request, url.trim(), option('POST', {}));
+
+    if (checkRes(res.statusCode)) {
+      // model invalid
+      if (res.statusCode === responseCode.validationFailed) {
+        // hightlight field error
+        yield put(invalidModel(res.errors));
+      }
+
+      const err = { message: res.message };
+      throw err;
+    }
+
+    // hide progress
+  } catch (err) {
+    yield put(fetchApiError(err));
+  }
+}
+
 /**
  * Root saga manages watcher lifecycle
  */
@@ -375,4 +399,6 @@ export default function* myGroupData() {
 
   yield takeLatest(USER_OUT_GROUP, userOutGroup);
   yield takeLatest(USER_OUT_GROUP_SUCCESS, getMarketInit);
+
+  yield takeLatest(REQUEST_ADD_FRIEND, requestAddFriend);
 }
