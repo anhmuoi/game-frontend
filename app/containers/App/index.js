@@ -58,6 +58,8 @@ import { LoadAnalysisPage } from '../Analysis/Loadable.js';
 import { LoadRankPage } from '../Rank/Loadable.js';
 import { LoadHistoryPage } from '../History/Loadable.js';
 import { LoadMyGroupPage } from '../MyGroup/Loadable.js';
+import { MyProfileModifyPage } from '../MyProfile/Loadable.js';
+import { LoadChangePasswordPage } from '../ChangePasswordPage/Loadable.js';
 const AppWrapper = styled.div`
   margin: 0 auto;
   display: flex;
@@ -139,6 +141,12 @@ export default function App() {
               <Route exact path="/rank" component={LoadRankPage} />
               <Route exact path="/history" component={LoadHistoryPage} />
               <Route exact path="/my-group" component={LoadMyGroupPage} />
+              <Route exact path="/my-profile" component={MyProfileModifyPage} />
+              <Route
+                exact
+                path="/change-password"
+                component={LoadChangePasswordPage}
+              />
               <Route
                 exact
                 path="/room-game/:id"

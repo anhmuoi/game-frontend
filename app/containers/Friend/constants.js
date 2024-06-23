@@ -47,3 +47,4 @@ export const UPDATE_AVATAR = 'demasterpro/FRIEND/UPDATE_AVATAR';
 export const SET_STORE_LIST_WAITING =
   'demasterpro/FRIEND/SET_STORE_LIST_WAITING';
 export const SET_USER_FRIEND = 'demasterpro/FRIEND/SET_USER_FRIEND';
+export const REQUEST_ADD_FRIEND = 'demasterpro/FRIEND/REQUEST_ADD_FRIEND';

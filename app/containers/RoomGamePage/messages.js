@@ -34,8 +34,6 @@ export default defineMessages({
     defaultMessage: `Total People`,
   },
 
-  
-  
   system: {
     id: `demasterpro.containers.rankSystem.system`,
     defaultMessage: `System`,
@@ -103,6 +101,10 @@ export default defineMessages({
   passwordRoom: {
     id: `demasterpro.containers.roomDetailPage.passwordRoom`,
     defaultMessage: `Password`,
+  },
+  myProfile: {
+    id: `demasterpro.containers.rankSystem.myProfile`,
+    defaultMessage: `My Profile`,
   },
   confirm: {
     id: `${scope}.confirm`,

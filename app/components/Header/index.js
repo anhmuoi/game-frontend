@@ -10,8 +10,44 @@ import '../css/style-common.css';
 import '../css/style-basic.css';
 import './header.css';
 import { ethers } from 'ethers';
+import { FormattedMessage } from 'react-intl';
+import messages from './messages.js';
+import SelectUI from 'components/SelectUI';
+import { localstoreUtilites } from '../../utils/persistenceData.js';
+import Api from './api';
 
 let isConfirm = false;
+const LANGUAGE = [
+  {
+    id: 'en-US',
+    name: (
+      <Icon
+        icon="twemoji:flag-england"
+        color="#00B5AD"
+        width="30"
+        height="30"
+      />
+    ),
+  },
+  {
+    id: 'ko-KR',
+    name: (
+      <Icon icon="fxemoji:koreaflag" color="#00B5AD" width="30" height="30" />
+    ),
+  },
+  {
+    id: 'vi-VN',
+    name: (
+      <Icon
+        icon="twemoji:flag-vietnam"
+        color="#00B5AD"
+        width="30"
+        height="30"
+      />
+    ),
+  },
+];
+const lang = localstoreUtilites.getLanguageFromLocalStorage();
 
 function Header(props) {
   const { setToggle, loginByAddress, history } = props;
@@ -38,6 +74,7 @@ function Header(props) {
     isConfirm = false;
     localStorage.removeItem('accountStatus');
     deactivate();
+    window.location.href = `${window.location.origin}/login`;
   };
 
   function copyToClipBoard() {
@@ -53,9 +90,26 @@ function Header(props) {
   }
 
   const [balance, setBalance] = useState(null);
+  const [accountProfile, setAccountProfile] = useState({});
+  const [language, setLanguage] = useState(lang || 'en-US');
 
   useEffect(() => {
-    console.log(chainId, isConfirm);
+    const getAccount = (id) => {
+      try {
+        const res = Api.getAccount(id);
+        setAccountProfile(res);
+        return res;
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    };
+    const id = localstoreUtilites.getUserIdFromLocalStorage();
+
+    getAccount(id);
+  }, []);
+
+  useEffect(() => {
     if (!chainId && isConfirm) {
       const { ethereum } = window;
       (async () => {
@@ -123,6 +177,17 @@ function Header(props) {
   ReactModal.defaultStyles.overlay.backgroundColor = 'rgba(0,0,0,0)';
 
   const isMobile = useMediaQuery('(max-width: 600px)');
+
+  const handleChangeLanguage = async (e) => {
+    setLanguage(e.target.value);
+    localstoreUtilites.saveLanguageToLocalStorage(e.target.value);
+    const res = await Api.updatePreference({
+      language: e.target.value,
+    });
+
+    window.location.reload();
+    return res;
+  };
 
   return (
     <div
@@ -216,10 +281,7 @@ function Header(props) {
                 <Text bold>Account</Text>
                 <ReactiveButton
                   idleText={
-                    <Flex
-                      alignItems="center"
-                      onClick={() => history.push('/login')}
-                    >
+                    <Flex alignItems="center">
                       <Icon
                         icon="clarity:logout-line"
                         color="#f4516c"
@@ -256,6 +318,58 @@ function Header(props) {
                 >
                   <Icon
                     icon="fluent:copy-24-filled"
+                    color="#00B5AD"
+                    width="30"
+                    height="30"
+                  />
+                </div>
+              </Flex>
+              <Flex
+                alignItems="center"
+                mt="20px"
+                style={{ color: 'rgb(0, 181, 173)' }}
+              >
+                <Icon
+                  icon="material-symbols:language"
+                  color="#00B5AD"
+                  width="30"
+                  height="30"
+                />
+                <Text m="0 10px" bold>
+                  <FormattedMessage {...messages.changeLanguage} />
+                </Text>
+                <div
+                  onClick={() => {}}
+                  style={{ height: 75 }}
+                  className="cursor-pointer"
+                >
+                  <SelectUI
+                    value={language}
+                    onChange={(e) => handleChangeLanguage(e)}
+                    options={LANGUAGE}
+                    name="language"
+                    id="language"
+                  />
+                </div>
+              </Flex>
+              <Flex
+                alignItems="center"
+                mt="20px"
+                style={{ color: 'rgb(0, 181, 173)', cursor: 'pointer' }}
+                onClick={() => history.push('/change-password')}
+              >
+                <Icon
+                  icon="solar:password-outline"
+                  color="#00B5AD"
+                  width="30"
+                  height="30"
+                />
+                <Text m="0 10px" bold>
+                  <FormattedMessage {...messages.changePassword} />
+                </Text>
+                <div className="cursor-pointer">
+                  <Icon
+                    icon="bxs:right-arrow"
                     color="#00B5AD"
                     width="30"
                     height="30"

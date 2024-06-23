@@ -352,7 +352,7 @@ class SignIn extends React.Component {
     });
 
     await ApiClient.loginByAddress({ address, balance });
-    await this.login();
+    await this.login(address);
   };
 
   render() {

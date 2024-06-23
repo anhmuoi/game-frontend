@@ -11,9 +11,10 @@ import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 
 import { FormattedMessage } from 'react-intl';
 import messages from './messages';
+import { Search } from '@material-ui/icons';
 
 function renderInput(inputProps) {
-  const { InputProps } = inputProps;
+  const { InputProps, styleInput } = inputProps;
 
   return (
     <FormControl required={InputProps.required} fullWidth>
@@ -21,6 +22,7 @@ function renderInput(inputProps) {
       <FormattedMessage {...messages.typeToSearch}>
         {(typeToSearch) => (
           <Input
+            style={styleInput}
             {...InputProps}
             value={
               typeof InputProps.value !== 'string'
@@ -31,6 +33,11 @@ function renderInput(inputProps) {
             endAdornment={
               <InputAdornment position="end">
                 <ArrowDropDown />
+              </InputAdornment>
+            }
+            endAdornment={
+              <InputAdornment position="start">
+                <Search />
               </InputAdornment>
             }
           />
@@ -109,7 +116,15 @@ class Autocomplete extends React.Component {
   }
 
   render() {
-    const { classes, label, required, onSelect, id, placeholder } = this.props;
+    const {
+      classes,
+      label,
+      required,
+      onSelect,
+      id,
+      placeholder,
+      styleInput,
+    } = this.props;
     const { suggestions } = this.state;
 
     return (
@@ -136,6 +151,7 @@ class Autocomplete extends React.Component {
               }}
             >
               {renderInput({
+                styleInput: styleInput,
                 fullWidth: true,
                 classes,
                 InputProps: getInputProps({
@@ -209,6 +225,7 @@ Autocomplete.propTypes = {
   required: PropTypes.bool,
   id: PropTypes.string.isRequired,
   label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  styleInput: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   getSuggestions: PropTypes.func.isRequired,
   onChangeKeyword: PropTypes.func,
   onSelect: PropTypes.func.isRequired,

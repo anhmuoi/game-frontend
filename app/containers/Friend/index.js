@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Collapse,
   Grid,
   IconButton,
   Tooltip,
@@ -11,6 +12,8 @@ import {
   withStyles,
 } from '@material-ui/core';
 import { makeSelectError, makeSelectLoading } from 'containers/App/selectors';
+import { Icon } from '@iconify/react';
+
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -23,6 +26,7 @@ import reducer from './reducer.js';
 import saga from './saga.js';
 import { mainStyle } from './styles.js';
 import InputUI from 'components/InputUI';
+import Autocomplete from 'components/Autocomplete';
 
 import * as LottiePlayer from '@lottiefiles/lottie-player';
 import imgAttack from 'images/people/attack.png';
@@ -42,6 +46,7 @@ import {
   getSortMarketList,
   postMarketAdd,
   putMarketUpdate,
+  requestAddFriend,
 } from './actions.js';
 import messages from './messages.js';
 import './styles.css';
@@ -56,7 +61,7 @@ import {
 import Header from '../../components/Header/index.js';
 import { create_UUID } from '../../utils/utils.js';
 import WebSocketMqtt from '../../utils/mqtt.js';
-import { Close, Menu, NoteAddOutlined } from '@material-ui/icons';
+import { Close, Menu, NoteAddOutlined, Search } from '@material-ui/icons';
 import Sidebar from './Sidebar.js';
 import { mapModelMarketUiToApi } from './functions.js';
 const localUsername = localstoreUtilites.getUsernameFromLocalStorage();
@@ -100,11 +105,17 @@ export class MarketInformationPage extends React.Component {
     openModalSell: false,
     itemSellSelected: null,
     priceSell: 0,
+
+    arrSuggestion: [],
+    searchItemSelect: {},
+    search: '',
+    idUserSelected: null,
+    listAddFriendRequested: [],
   };
 
   componentDidMount() {
     this.getDataMarketTable([], [], null);
-    this.props.getMarketInit();
+    this.props.getMarketInit('');
   }
 
   getDataMarketTable(departmentIds, status, search) {
@@ -192,6 +203,13 @@ export class MarketInformationPage extends React.Component {
     );
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.searchDataSelector !== this.props.searchDataSelector) {
+      this.setState({
+        arrSuggestion: this.getSuggestions(),
+      });
+    }
+  }
   UNSAFE_componentWillMount() {
     if (!window.DeMaster_Mqtt_Client) {
       window.DeMaster_Mqtt_Client = new WebSocketMqtt()
@@ -335,6 +353,54 @@ export class MarketInformationPage extends React.Component {
     return newData;
   };
 
+  checkIsFriend = (datas, userId) => {
+    let check = false;
+    datas.map((item) => {
+      if (item.userId1 === userId) {
+        check = true;
+      } else if (item.userId2 === userId) {
+        check = true;
+      }
+    });
+    return check;
+  };
+
+  getSuggestions = () => {
+    const { userList } = this.props;
+    let dataSearch = [];
+    userList.map((it) => {
+      if (
+        it.id !== 1 &&
+        it.id !== Number(localstoreUtilites.getUserIdFromLocalStorage())
+      ) {
+        dataSearch.push({
+          id: it.id,
+          label: (
+            <React.Fragment>
+              <img
+                style={{ width: 24, height: 24, marginRight: 5 }}
+                src={it.avatar}
+                alt=""
+              />{' '}
+              {it.name}
+            </React.Fragment>
+          ),
+        });
+      }
+    });
+
+    return dataSearch;
+  };
+
+  onSearchUser = (search) => {
+    this.props.getMarketInit(search);
+  };
+  selectedUser = (id) => {
+    this.setState({
+      idUserSelected: id,
+    });
+  };
+
   render() {
     const {
       friendIdSelected,
@@ -393,55 +459,6 @@ export class MarketInformationPage extends React.Component {
           history={history}
         />
 
-        {openModalSell ? (
-          <div className="modal-sell-item">
-            <IconButton
-              color="white"
-              className="modal-sell-close"
-              onClick={() => this.closeModalSell()}
-            >
-              <Close />
-            </IconButton>
-            <img src={image.value} className="sell-img" />
-            <p className="sell-name">{name.value} </p>
-            <InputUI
-              id="price"
-              name="price"
-              // autoFocus
-              value={price.value}
-              color="white"
-              onChange={onChangeTextField}
-              typeInput="number"
-              label={<FormattedMessage {...messages.price} />}
-            />
-            <div style={{ textAlign: 'center' }}>
-              <Button
-                onClick={() => this.sellItemNft()}
-                style={{
-                  background: '#00B5AD',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  margin: 20,
-                }}
-              >
-                <FormattedMessage {...messages.sell}></FormattedMessage>
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
-        {/* <img
-          style={{
-            width: '100%',
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-          }}
-          src={battlegrounds[0].image}
-          alt=""
-        /> */}
         <Header loginByAddress={() => null} history={history} />
         <div className="room-game-logo">
           <img src={imgAttack} alt="" />
@@ -453,6 +470,7 @@ export class MarketInformationPage extends React.Component {
         >
           <FormattedMessage {...messages.friend} />
         </Typography>
+
         {user ? (
           <div
             style={{
@@ -471,7 +489,254 @@ export class MarketInformationPage extends React.Component {
             </p>
           </div>
         ) : null}
-        <div className="room-game-list" style={{ marginTop: 80 }}>
+
+        <div
+          style={{
+            width: '70%',
+            margin: '0 auto',
+            background: 'white',
+            borderRadius: '5px',
+            color: '#00B5AD',
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <Autocomplete
+            classes={classes}
+            id="search"
+            name="search"
+            styleInput={{ margin: 16 }}
+            suggestion={this.state.arrSuggestion}
+            getSuggestions={this.getSuggestions}
+            onChangeKeyword={async (value) => {
+              await this.onSearchUser(value);
+              this.setState({
+                search: value,
+              });
+            }}
+            onSelect={async (item) => {
+              if (item) {
+                let newArr = [];
+                this.state.arrSuggestion.map((item) =>
+                  newArr.push({ ...item, label: item.name }),
+                ),
+                  this.setState({
+                    searchItemSelect: item,
+                    arrSuggestion: newArr,
+                  });
+                this.selectedUser(item.id);
+              }
+            }}
+            placeholder={this.state.searchItemSelect.name}
+          />
+        </div>
+
+        <div
+          className="room-game-list"
+          style={{ marginTop: 80, flexDirection: 'column', gap: 15 }}
+        >
+          <Collapse
+            in={this.state.idUserSelected}
+            timeout="auto"
+            unmountOnExit
+            style={{
+              width: '100%',
+              margin: '0 auto',
+              background: 'white',
+              color: 'gray',
+              fontWeight: 'bolder',
+            }}
+          >
+            {userList.find((m) => m.id === this.state.idUserSelected) ? (
+              <div style={{ padding: 10, color: 'gray' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div
+                    style={{
+                      gap: 10,
+                      alignItems: 'center',
+                      display: 'flex',
+                    }}
+                  >
+                    <img
+                      src={
+                        userList.find((m) => m.id === this.state.idUserSelected)
+                          .avatar
+                      }
+                      style={{ width: 50, height: 50, borderRadius: '100%' }}
+                    />
+                    <p style={{ fontWeight: 'bold', fontSize: 20 }}>
+                      {
+                        userList.find((m) => m.id === this.state.idUserSelected)
+                          .name
+                      }
+                    </p>
+                  </div>
+                  {this.checkIsFriend(datas, this.state.idUserSelected) ? (
+                    <div
+                      onClick={() => {
+                        let freId = null;
+                        datas.map((f) => {
+                          if (f.userId1 === this.state.idUserSelected) {
+                            freId = f.id;
+                          } else if (f.userId2 === this.state.idUserSelected) {
+                            freId = f.id;
+                          }
+                        });
+                        if (freId) {
+                          this.props.onDeleteMultiesMarket([freId]);
+                        }
+                      }}
+                      style={{
+                        padding: 10,
+                        background: '#00B5AD',
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        color: 'white',
+                      }}
+                    >
+                      <FormattedMessage {...messages.unfriend} />
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => {
+                        if (
+                          !this.state.listAddFriendRequested.includes(
+                            this.state.idUserSelected,
+                          )
+                        ) {
+                          this.props.onRequestAddFriend(
+                            user.id,
+                            this.state.idUserSelected,
+                          );
+                          this.setState({
+                            listAddFriendRequested: [
+                              this.state.listAddFriendRequested,
+                              this.state.idUserSelected,
+                            ],
+                          });
+                        }
+                      }}
+                      style={{
+                        padding: 10,
+                        background: '#00B5AD',
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        color: 'white',
+                      }}
+                    >
+                      {this.state.listAddFriendRequested.includes(
+                        this.state.idUserSelected,
+                      ) ? (
+                        <FormattedMessage {...messages.sent} />
+                      ) : (
+                        <FormattedMessage {...messages.addFriend} />
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 20,
+                  }}
+                >
+                  <div>
+                    <FormattedMessage {...messages.email} />:
+                  </div>
+                  <p style={{ fontWeight: 'bold', fontSize: 20 }}>
+                    {
+                      userList.find((m) => m.id === this.state.idUserSelected)
+                        .email
+                    }
+                  </p>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 20,
+                    }}
+                  >
+                    <div>
+                      <FormattedMessage {...messages.walletAddress} />:
+                    </div>
+                    <p style={{ fontWeight: 'bold', fontSize: 20 }}>
+                      {
+                        userList.find((m) => m.id === this.state.idUserSelected)
+                          .walletAddress
+                      }
+                    </p>
+                  </div>
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: 20 }}
+                  >
+                    <Icon icon="noto-v1:right-arrow" fontSize="40px" />
+                    <div
+                      onClick={() => {
+                        const userAdd = userList.find(
+                          (m) => m.id === this.state.idUserSelected,
+                        );
+                        if (userAdd && userAdd.walletAddress) {
+                          const url = `https://testnet.bscscan.com/address/${userAdd.walletAddress}`;
+                          window.open(url, '_blank');
+                        }
+                      }}
+                      style={{
+                        padding: 10,
+                        background: '#00B5AD',
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        color: 'white',
+                      }}
+                    >
+                      <FormattedMessage {...messages.checkTransactionHistory} />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 20,
+                  }}
+                >
+                  <div>
+                    <FormattedMessage {...messages.phone} />:
+                  </div>
+                  <p style={{ fontWeight: 'bold', fontSize: 20 }}>
+                    {
+                      userList.find((m) => m.id === this.state.idUserSelected)
+                        .phone
+                    }
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </Collapse>
           {this.handleDatas(datas, userList).length > 0 ? (
             this.handleDatas(datas, userList).map((user, key) => (
               <div
@@ -499,7 +764,7 @@ export class MarketInformationPage extends React.Component {
                     style={{ width: 50, height: 50, borderRadius: '100%' }}
                   />
                   <p
-                    style={{ color: 'white', fontWeight: 'bold', fontSize: 25 }}
+                    style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}
                   >
                     {user.name}
                   </p>
@@ -556,6 +821,7 @@ MarketInformationPage.propTypes = {
   onChangeTextField: PropTypes.func,
   onGetSortColumn: PropTypes.func,
   onGetSortDirection: PropTypes.func,
+  onRequestAddFriend: PropTypes.func,
 
   loading: PropTypes.bool,
   history: PropTypes.object,
@@ -571,7 +837,7 @@ function mapDispatchToProps(dispatch) {
     // Market index
     onGetMarketData: (departmentIds, status, search) =>
       dispatch(getMarketData(departmentIds, status, search)),
-    getMarketInit: () => dispatch(getMarketInit()),
+    getMarketInit: (search) => dispatch(getMarketInit(search)),
     onDeleteMarket: (id) => dispatch(deleteMarket(id)),
     onDeleteMultiesMarket: (ids) => dispatch(deleteMultiesMarket(ids)),
     onChangePageNumber: (pageNumber) =>
@@ -587,6 +853,9 @@ function mapDispatchToProps(dispatch) {
     onGetSortColumn: (sortColumn, cloneSortColumn) =>
       dispatch(getSortMarketList(sortColumn, cloneSortColumn)),
     onGetSortDirection: () => dispatch(getSortDirectionMarketList()),
+
+    onRequestAddFriend: (userId1, userId2) =>
+      dispatch(requestAddFriend(userId1, userId2)),
   };
 }
 

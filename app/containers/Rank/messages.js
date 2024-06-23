@@ -186,4 +186,8 @@ export default defineMessages({
     id: `${scope}.yourBalance`,
     defaultMessage: `Your Balance`,
   },
+  myProfile: {
+    id: `${scope}.myProfile`,
+    defaultMessage: `My Profile`,
+  },
 });

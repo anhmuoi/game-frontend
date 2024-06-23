@@ -17,6 +17,7 @@ import * as LottiePlayer from '@lottiefiles/lottie-player';
 import imgAttack from 'images/people/attack.png';
 import messages from './messages.js';
 import { FormattedMessage } from 'react-intl';
+import { localstoreUtilites } from '../../utils/persistenceData.js';
 
 function Sidebar(props) {
   const { setCollapse, collapse, toggle, setToggle, history } = props;
@@ -153,6 +154,14 @@ function Sidebar(props) {
               }}
             >
               <FormattedMessage {...messages.history} />
+            </MenuItem>
+            <MenuItem
+              icon={<Icon icon="iconamoon:profile" fontSize="20px" />}
+              onClick={() => {
+                history.push(`/my-profile`);
+              }}
+            >
+              <FormattedMessage {...messages.myProfile} />
             </MenuItem>
           </SubMenu>
 

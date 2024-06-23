@@ -224,6 +224,8 @@
   "demasterpro.containers.rankSystem.history": "역사",
   "demasterpro.containers.rankSystem.community": "커뮤니티",
   "demasterpro.containers.rankSystem.group": "그룹",
+  "demasterpro.containers.rankSystem.myProfile": "My Profile",
+
 
   "demasterpro.containers.groupUserSystem.groupUser": "그룹 사용자",
   "demasterpro.containers.groupUserSystem.join": "가입",

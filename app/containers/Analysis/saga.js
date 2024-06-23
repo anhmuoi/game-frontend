@@ -37,7 +37,7 @@ import {
   GET_BALANCE_CHART,
 } from './constants.js';
 
-import { convertShowDateTime, formatDateToSend } from '../../utils/utils.js';
+import { convertShowDateTime, formatDateTimeToSendWithoutUTC, formatDateToSend } from '../../utils/utils.js';
 import { notifySuccess } from '../App/actions.js';
 import { mapIdsToQueryString, mapModelMarketApiToUI } from './functions.js';
 import { getMetaPagingMarket } from './selectors.js';
@@ -256,9 +256,9 @@ export function* getChartBalance(action) {
   const userId = action.userId;
   const startDate = action.startDate;
   const endDate = action.endDate;
-  const url = `${URL_DOMAIN}/balances/chart?userId=${userId}&startDate=${formatDateToSend(
+  const url = `${URL_DOMAIN}/balances/chart?userId=${userId}&startDate=${formatDateTimeToSendWithoutUTC(
     new Date(startDate),
-  )}&endDate=${formatDateToSend(new Date(endDate))}`;
+  )}&endDate=${formatDateTimeToSendWithoutUTC(new Date(endDate))}`;
 
   try {
     const res = yield call(request, url.trim(), option('GET'));

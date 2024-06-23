@@ -241,6 +241,7 @@
   "demasterpro.containers.rankSystem.history": "History",
   "demasterpro.containers.rankSystem.community": "Community",
   "demasterpro.containers.rankSystem.group": "Group",
+  "demasterpro.containers.rankSystem.myProfile": "My Profile",
 
   "demasterpro.containers.groupUserSystem.groupUser": "Group",
   "demasterpro.containers.groupUserSystem.join": "Join",

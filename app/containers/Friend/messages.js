@@ -122,7 +122,30 @@ export default defineMessages({
     id: `${scope}.unfriend`,
     defaultMessage: `Unfriend`,
   },
-
+  email: {
+    id: `${scope}.email`,
+    defaultMessage: `Email`,
+  },
+  phone: {
+    id: `${scope}.phone`,
+    defaultMessage: `Phone`,
+  },
+  walletAddress: {
+    id: `${scope}.walletAddress`,
+    defaultMessage: `Wallet Address`,
+  },
+  addFriend: {
+    id: `${scope}.addFriend`,
+    defaultMessage: `Add Friend`,
+  },
+  checkTransactionHistory: {
+    id: `${scope}.checkTransactionHistory`,
+    defaultMessage: `Check Transaction History`,
+  },
+  sent: {
+    id: `${scope}.sent`,
+    defaultMessage: `Sent`,
+  },
 
   system: {
     id: `demasterpro.containers.rankSystem.system`,
@@ -179,5 +202,9 @@ export default defineMessages({
   rank: {
     id: `demasterpro.containers.rankSystem.rank`,
     defaultMessage: `Rank`,
+  },
+  myProfile: {
+    id: `demasterpro.containers.rankSystem.myProfile`,
+    defaultMessage: `My Profile`,
   },
 });

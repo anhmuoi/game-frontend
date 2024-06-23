@@ -109,6 +109,8 @@ export class MarketInformationPage extends React.Component {
   componentDidMount() {
     this.getDataMarketTable([], [], null);
     this.props.getMarketInit();
+    console.log( new Date(new Date().setDate(new Date().getDate() - 7)),
+    new Date(new Date().setDate(new Date().getDate() + 1)),);
     this.props.onGetBalanceChart(
       localstoreUtilites.getUserIdFromLocalStorage(),
       new Date(new Date().setDate(new Date().getDate() - 7)),

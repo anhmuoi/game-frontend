@@ -175,5 +175,9 @@ export default defineMessages({
     id: `demasterpro.containers.rankSystem.rank`,
     defaultMessage: `Rank`,
   },
+  myProfile: {
+    id: `demasterpro.containers.rankSystem.myProfile`,
+    defaultMessage: `My Profile`,
+  },
   
 });

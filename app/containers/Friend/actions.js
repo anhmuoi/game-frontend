@@ -44,6 +44,7 @@ import {
   UPDATE_AVATAR,
   SET_STORE_LIST_WAITING,
   SET_USER_FRIEND,
+  REQUEST_ADD_FRIEND,
 } from './constants';
 
 /**
@@ -196,9 +197,10 @@ export function getMarketData(departmentIds, status, search) {
   };
 }
 
-export function getMarketInit() {
+export function getMarketInit(search) {
   return {
     type: FETCH_FRIEND_INIT,
+    search,
   };
 }
 
@@ -298,5 +300,13 @@ export function setUserData(userList) {
   return {
     type: SET_USER_FRIEND,
     userList,
+  };
+}
+
+export function requestAddFriend(userId1, userId2) {
+  return {
+    type: REQUEST_ADD_FRIEND,
+    userId1,
+    userId2,
   };
 }

@@ -33,6 +33,21 @@ export const balanceNotEnough = () => {
       return 'Your balance is not enough';
   }
 };
+export const passwordNotMatch = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'Password and Confirm password not match!';
+    case LANGUAGE.KOREA:
+      return 'Password and Confirm password not match!';
+    case LANGUAGE.JAPANESE:
+      return 'Password and Confirm password not match!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Mật khẩu và xác nhận mật khẩu không khớp!';
+
+    default:
+      return 'Password and Confirm password not match!';
+  }
+};
 export const notiGetFriend = () => {
   switch (lang) {
     case LANGUAGE.ENGLISH:
