@@ -106,7 +106,9 @@ function Header(props) {
     };
     const id = localstoreUtilites.getUserIdFromLocalStorage();
 
-    getAccount(id);
+    // if (localStorage.getItem('accountStatus')) {
+    //   getAccount(id);
+    // }
   }, []);
 
   useEffect(() => {

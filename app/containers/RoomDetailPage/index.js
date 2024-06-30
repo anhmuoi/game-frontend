@@ -92,6 +92,7 @@ import {
   AgreeMess,
   agreeAddFriend,
   existItem,
+  msgKick,
   notiGetFriend,
   textUpdateRoom,
 } from '../../utils/translation.js';
@@ -485,17 +486,17 @@ export class RoomDetailInformationPage extends React.Component {
             player2 = index2_4;
             player3 = index3_4;
             player4 = index4_4;
-          } else if (check.indexPlayer === 2) {
+          } else if (check_4.indexPlayer === 2) {
             player1 = index2_4;
             player2 = index3_4;
             player3 = index4_4;
             player4 = index1_4;
-          } else if (check.indexPlayer === 3) {
+          } else if (check_4.indexPlayer === 3) {
             player1 = index3_4;
             player2 = index4_4;
             player3 = index1_4;
             player4 = index2_4;
-          } else if (check.indexPlayer === 4) {
+          } else if (check_4.indexPlayer === 4) {
             player1 = index4_4;
             player2 = index1_4;
             player3 = index2_4;
@@ -596,7 +597,7 @@ export class RoomDetailInformationPage extends React.Component {
       (i) => i.id === Number(localstoreUtilites.getUserIdFromLocalStorage()),
     );
     if (checkOwnerRoom && checkOwnerRoom.ownerRoom === id.value) {
-      if (isRunning && isRunning.value) {
+      if (isRunning && isRunning.value === true) {
         if (
           meetingLogsDetailSelector !== null &&
           meetingLogsDetailSelector.gamePlay
@@ -615,7 +616,7 @@ export class RoomDetailInformationPage extends React.Component {
               checkHp = true;
             }
           });
-          if (countCard.length === 52 || checkHp) {
+          if ((countCard.length === 52 || checkHp) && this.state.winner === null) {
             console.log('end');
             const msgId = create_UUID();
 
@@ -803,7 +804,7 @@ export class RoomDetailInformationPage extends React.Component {
           this.props.onInitIndexRoomDetail(this.props.match.params.id);
           this.showEndGame(messageQueue.data.action);
           this.setState({
-            nFTListChoose: [],
+            nFTListChoose: nftRawList,
             loadingCreateBattle: false,
           });
         }
@@ -860,6 +861,7 @@ export class RoomDetailInformationPage extends React.Component {
           });
           this.props.onInitIndexRoomDetail(this.props.match.params.id);
         }
+
         if (messageQueue.data.action.id === 10) {
           if (
             Number(localstoreUtilites.getUserIdFromLocalStorage()) ===
@@ -963,6 +965,28 @@ export class RoomDetailInformationPage extends React.Component {
           if (this.state.dataRoomInfo === null) {
             this.props.onInitIndexRoomDetail(this.props.match.params.id);
           }
+        }
+        if (messageQueue.data.action.id === 14) {
+          this.props.onInitIndexRoomDetail(this.props.match.params.id);
+        }
+      } else if (messageQueue.data.action.id === 14) {
+        if (
+          Number(localstoreUtilites.getUserIdFromLocalStorage()) ===
+          Number(messageQueue.data.action.userIdIsKick)
+        ) {
+          setTimeout(() => {
+            window.location.href = `${window.location.origin}/room-game`;
+          }, 1000);
+          toast.error(<div style={{ color: 'white' }}>{msgKick()}</div>, {
+            position: toast.POSITION.TOP_RIGHT,
+            hideProgressBar: false,
+            autoClose: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'dark',
+          });
         }
       } else {
         this.props.onInitIndexRoomDetail(this.props.match.params.id);
@@ -2759,6 +2783,47 @@ export class RoomDetailInformationPage extends React.Component {
       },
     });
   };
+  handleKick = (userIdKick) => {
+    const { roomDetailDataModified, userList } = this.props;
+    const {
+      id,
+      name,
+      isRunning,
+      description,
+      totalPeople,
+      currentPeople,
+      passwordRoom,
+      price,
+      userListId,
+    } = roomDetailDataModified.toJS();
+
+    const msgId = create_UUID();
+
+    let room = {};
+    room.id = id.value;
+    room.name = name.value;
+    room.isRunning = isRunning.value;
+    room.description = description.value;
+    room.passwordRoom = passwordRoom.value;
+    room.totalPeople = totalPeople.value;
+    room.currentPeople = currentPeople.value;
+    room.price = price.value;
+    room.userListId = userListId.value;
+
+    console.log(userIdKick, room);
+    window.DeMaster_Mqtt_Client.publish(MQTT_TYPE.EXPORT_MEMBER.topic, {
+      msgId: msgId,
+      type: MQTT_TYPE.EXPORT_MEMBER.type,
+      data: {
+        room: room,
+        userId: localstoreUtilites.getUserIdFromLocalStorage(),
+        action: {
+          id: 14,
+          userIdIsKick: userIdKick,
+        },
+      },
+    });
+  };
   render() {
     const {
       roomDetailIdSelected,
@@ -2825,7 +2890,6 @@ export class RoomDetailInformationPage extends React.Component {
         );
         if (check) {
         } else {
-          console.log(window.location);
           window.location.href = `${window.location.origin}/room-game`;
         }
       }
@@ -3555,23 +3619,26 @@ export class RoomDetailInformationPage extends React.Component {
                   </div>
 
                   <div className="card">
-                    {meetingLogsDetailSelector.gamePlay.cardList.map((card) => (
-                      <img
-                        src={card.choose ? card.image : card.deck}
-                        alt=""
-                        key={card.id}
-                        style={{ width: 60, zIndex: 10, cursor: 'pointer' }}
-                        onClick={() => {
-                          if (
-                            isClickCard === false &&
-                            permissionTurn === true &&
-                            card.choose === false
-                          ) {
-                            this.clickCard(card.id);
-                          }
-                        }}
-                      />
-                    ))}
+                    {meetingLogsDetailSelector.gamePlay &&
+                      meetingLogsDetailSelector.gamePlay.cardList.map(
+                        (card) => (
+                          <img
+                            src={card.choose ? card.image : card.deck}
+                            alt=""
+                            key={card.id}
+                            style={{ width: 60, zIndex: 10, cursor: 'pointer' }}
+                            onClick={() => {
+                              if (
+                                isClickCard === false &&
+                                permissionTurn === true &&
+                                card.choose === false
+                              ) {
+                                this.clickCard(card.id);
+                              }
+                            }}
+                          />
+                        ),
+                      )}
                   </div>
 
                   <div className="player">
@@ -3776,24 +3843,29 @@ export class RoomDetailInformationPage extends React.Component {
                     </div>
 
                     <div className="card">
-                      {meetingLogsDetailSelector.gamePlay.cardList.map(
-                        (card) => (
-                          <img
-                            src={card.choose ? card.image : card.deck}
-                            alt=""
-                            key={card.id}
-                            style={{ width: 60, zIndex: 10, cursor: 'pointer' }}
-                            onClick={() => {
-                              if (
-                                isClickCard === false &&
-                                permissionTurn === true
-                              ) {
-                                this.clickCard(card.id);
-                              }
-                            }}
-                          />
-                        ),
-                      )}
+                      {meetingLogsDetailSelector.gamePlay &&
+                        meetingLogsDetailSelector.gamePlay.cardList.map(
+                          (card) => (
+                            <img
+                              src={card.choose ? card.image : card.deck}
+                              alt=""
+                              key={card.id}
+                              style={{
+                                width: 60,
+                                zIndex: 10,
+                                cursor: 'pointer',
+                              }}
+                              onClick={() => {
+                                if (
+                                  isClickCard === false &&
+                                  permissionTurn === true
+                                ) {
+                                  this.clickCard(card.id);
+                                }
+                              }}
+                            />
+                          ),
+                        )}
                     </div>
 
                     <div className="player">
@@ -4152,24 +4224,29 @@ export class RoomDetailInformationPage extends React.Component {
                     </div>
 
                     <div className="card">
-                      {meetingLogsDetailSelector.gamePlay.cardList.map(
-                        (card) => (
-                          <img
-                            src={card.choose ? card.image : card.deck}
-                            alt=""
-                            key={card.id}
-                            style={{ width: 60, zIndex: 10, cursor: 'pointer' }}
-                            onClick={() => {
-                              if (
-                                isClickCard === false &&
-                                permissionTurn === true
-                              ) {
-                                this.clickCard(card.id);
-                              }
-                            }}
-                          />
-                        ),
-                      )}
+                      {meetingLogsDetailSelector.gamePlay &&
+                        meetingLogsDetailSelector.gamePlay.cardList.map(
+                          (card) => (
+                            <img
+                              src={card.choose ? card.image : card.deck}
+                              alt=""
+                              key={card.id}
+                              style={{
+                                width: 60,
+                                zIndex: 10,
+                                cursor: 'pointer',
+                              }}
+                              onClick={() => {
+                                if (
+                                  isClickCard === false &&
+                                  permissionTurn === true
+                                ) {
+                                  this.clickCard(card.id);
+                                }
+                              }}
+                            />
+                          ),
+                        )}
                     </div>
 
                     <div className="player">
@@ -4349,6 +4426,8 @@ export class RoomDetailInformationPage extends React.Component {
           </div>
         ) : (
           <Arena
+            handleKick={(userIdKick) => this.handleKick(userIdKick)}
+            userOwnerRoom={userOwnerRoom}
             friendListDataSelector={friendListDataSelector}
             handleAddFriend={(user2) => this.handleAddFriend(user2)}
             loadingCreateBattle={loadingCreateBattle}

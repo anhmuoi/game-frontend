@@ -198,6 +198,21 @@ export const canNotBuyNftOfYourSelf = () => {
       return 'You cannot buy NFT of yourself!';
   }
 };
+export const msgKick = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'You are kick out room!';
+    case LANGUAGE.KOREA:
+      return 'You are kick out room!';
+    case LANGUAGE.JAPANESE:
+      return 'You are kick out room!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Bạn đã bị đuổi khỏi phòng!';
+
+    default:
+      return 'You are kick out room!';
+  }
+};
 export const buyNftSuccess = () => {
   switch (lang) {
     case LANGUAGE.ENGLISH:

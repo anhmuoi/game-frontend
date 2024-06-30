@@ -63,6 +63,7 @@ import { ethers } from 'ethers';
 import {
   balanceNotEnough,
   gameIsRunning,
+  msgKick,
   nameEmpty,
   nameRoomExist,
   passwordIncorrect,
@@ -272,6 +273,23 @@ export class RoomGameInformationPage extends React.Component {
             window.location.href = `${window.location.href}/${messageQueue.data.room.id}`;
           }
         }
+      }
+      if (messageQueue.data.action.id === 14) {
+        if (
+          Number(localstoreUtilites.getUserIdFromLocalStorage()) ===
+          Number(messageQueue.data.action.userIdIsKick)
+        ) {
+          toast.error(<div style={{ color: 'white' }}>{msgKick()}</div>, {
+            position: toast.POSITION.TOP_RIGHT,
+            hideProgressBar: false,
+            autoClose: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'dark',
+          });
+        } 
       }
       if (
         messageQueue.data.action.id === 13 &&

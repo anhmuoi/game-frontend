@@ -46,14 +46,6 @@ function Sidebar(props) {
       </SidebarHeader>
       <SidebarContent>
         <Menu iconShape="circle">
-          <MenuItem
-            icon={<Icon icon="flat-color-icons:home" fontSize="20px" />}
-            onClick={() => {
-              history.push('/user');
-            }}
-          >
-            <FormattedMessage {...messages.system} />
-          </MenuItem>
           <SubMenu
             title={<FormattedMessage {...messages.game} />}
             icon={<Icon icon="noto:video-game" fontSize="20px" />}

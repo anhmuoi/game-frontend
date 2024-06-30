@@ -31,7 +31,7 @@ export class Permissions extends Component {
     //
   }
 
-  handleExpansion = panel => (event, expanded) => {
+  handleExpansion = (panel) => (event, expanded) => {
     const newArr = [...this.state.expanded];
     if (expanded) {
       if (!newArr.includes(panel)) newArr.push(panel);
@@ -46,7 +46,7 @@ export class Permissions extends Component {
     });
   };
 
-  changeEnabled = evt => {
+  changeEnabled = (evt) => {
     const { roleModel } = this.props;
     const permissionData = roleModel.permissionGroups.value;
     const splitString = evt.target.name.split('_');
@@ -58,7 +58,7 @@ export class Permissions extends Component {
     } else if (orgGroupName === 'Visit management') {
       groupName = 'Visit';
     }
-    const newData = permissionData.map(group => {
+    const newData = permissionData.map((group) => {
       const crudList =
         groupName === 'Attendance' || groupName === 'Visit'
           ? [
@@ -74,7 +74,7 @@ export class Permissions extends Component {
               'Delete'.concat(group.title),
             ];
       if (group.groupName === orgGroupName) {
-        const newPerm = group.permissions.map(perm => {
+        const newPerm = group.permissions.map((perm) => {
           if (perm.title === permissionName) {
             return {
               ...perm,
@@ -86,16 +86,16 @@ export class Permissions extends Component {
         for (let i = 0; i < group.permissions.length; i += 1) {
           if (crudList.includes(permissionName) > 0) {
             const viewPermission = newPerm.find(
-              obj => obj.title === crudList[0],
+              (obj) => obj.title === crudList[0],
             );
             const addPermission = newPerm.find(
-              obj => obj.title === crudList[1],
+              (obj) => obj.title === crudList[1],
             );
             const editPermission = newPerm.find(
-              obj => obj.title === crudList[2],
+              (obj) => obj.title === crudList[2],
             );
             const deletePermission = newPerm.find(
-              obj => obj.title === crudList[3],
+              (obj) => obj.title === crudList[3],
             );
             switch (permissionName) {
               case crudList[0]:
@@ -167,10 +167,10 @@ export class Permissions extends Component {
             }
           } else {
             const viewPermission = newPerm.find(
-              obj => obj.title === crudList[0],
+              (obj) => obj.title === crudList[0],
             );
             const clickedPerm = newPerm.find(
-              obj => obj.title === permissionName,
+              (obj) => obj.title === permissionName,
             );
             if (clickedPerm.isEnabled) {
               // false -> true
@@ -216,13 +216,13 @@ export class Permissions extends Component {
             expandIcon={<ExpandMoreIcon nativeColor="white" />}
           >
             <Typography className={classes.heading}>
-              {permission.title === 'User'
-                ? permission.groupName.replace('User', 'User')
+              {permission.title === 'Department'
+                ? permission.groupName.replace('Department', 'Group')
                 : permission.groupName}
             </Typography>
           </ExpansionPanelSummary>
           {permission.permissions.map(
-            perm =>
+            (perm) =>
               perm.permissionName && (
                 <ExpansionPanelDetails
                   key={perm.permissionName}
@@ -230,10 +230,10 @@ export class Permissions extends Component {
                 >
                   <Tooltip
                     title={
-                      permission.title === 'User'
+                      permission.title.includes('Department')
                         ? perm.description
-                            .replace('User', 'User')
-                            .replace('user', 'User')
+                            .replace('department', 'Group')
+                            .replace('department', 'Group')
                         : perm.description
                     }
                     placement="right-end"
@@ -254,10 +254,10 @@ export class Permissions extends Component {
                         />
                       }
                       label={
-                        permission.title === 'User'
+                        permission.title.includes('Department')
                           ? perm.permissionName
-                              .replace('User', 'User')
-                              .replace('user', 'User')
+                              .replace('department', 'Group')
+                              .replace('department', 'Group')
                           : perm.permissionName
                       }
                     />
@@ -291,7 +291,6 @@ export class Permissions extends Component {
     const permissionData = roleModel.permissionGroups.value;
     const isDefault = roleModel.isDefault.value;
 
-    console.log(permissionData);
     return (
       <Paper className={`${classes.center} ${classes.permissionListPaper}`}>
         {/* Permission Lists */}
@@ -338,7 +337,7 @@ export class Permissions extends Component {
                 permission.title === 'Store' &&
                 this.renderPermission(isDefault, permission),
             )}
-            
+
             {permissionData.map(
               (permission, index) =>
                 permission.title === 'User' &&
@@ -393,7 +392,6 @@ export class Permissions extends Component {
                 permission.title === 'Department' &&
                 this.renderPermission(isDefault, permission),
             )}
-           
           </Grid>
         </Grid>
         {/* Buttons */}

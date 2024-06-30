@@ -59,7 +59,7 @@
   "demasterpro.components.DrawerMenu.myDriver": "My Drive",
   "demasterpro.components.DrawerMenu.sharedWithMe": "Shared With Me",
   "demasterpro.components.DrawerMenu.folder": "Folder Log",
-  "demasterpro.components.DrawerMenu.nft": "NFT",
+  "demasterpro.components.DrawerMenu.nft": "Items",
   "demasterpro.components.DrawerMenu.roomManage": "Room Manage",
   "demasterpro.components.DrawerMenu.game": "Game",
 
@@ -219,7 +219,7 @@
 
   "demasterpro.containers.roomDetailPage.price": "Price",
   "demasterpro.containers.roomDetailPage.totalPeople": "Total People",
-  "demasterpro.containers.roomDetailPage.chooseItem": "Choose 10 NFTs you want to bring, if you don't have enough NFTs the system will randomly give you items to bring",
+  "demasterpro.containers.roomDetailPage.chooseItem": "Choose 10 items you want to bring, if you don't have enough items the system will randomly give you items to bring",
   "demasterpro.containers.roomDetailPage.existItem": "You cannot carry items with the same attributes",
   "demasterpro.containers.roomDetailPage.outGame": "Quit Room",
   "demasterpro.containers.roomDetailPage.openChat": "Open Chat",
@@ -231,9 +231,9 @@
   "demasterpro.containers.rankSystem.system": "System",
   "demasterpro.containers.rankSystem.game": "Game",
   "demasterpro.containers.rankSystem.battle": "Battle",
-  "demasterpro.containers.rankSystem.NFTmarket": "NFT Market",
+  "demasterpro.containers.rankSystem.NFTmarket": "Market",
   "demasterpro.containers.rankSystem.market": "Market",
-  "demasterpro.containers.rankSystem.myNFTs": "My NFTs",
+  "demasterpro.containers.rankSystem.myNFTs": "My Items",
   "demasterpro.containers.rankSystem.profile": "Profile",
   "demasterpro.containers.rankSystem.myGroup": "My Group",
   "demasterpro.containers.rankSystem.analysis": "Analysis",
@@ -256,8 +256,8 @@
 
   "demasterpro.containers.myNftSystem.sell": "Sell",
   "demasterpro.containers.myNftSystem.cancelSell": "Cancel Sell",
-  "demasterpro.containers.myNftSystem.myNft": "My NFT",
+  "demasterpro.containers.myNftSystem.myNft": "My Items",
 
   "demasterpro.containers.marketSystem.buy": "Buy",
-  "demasterpro.containers.marketSystem.market": "NFT Market"
+  "demasterpro.containers.marketSystem.market": "Market"
 }
