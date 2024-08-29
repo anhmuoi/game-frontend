@@ -46,7 +46,7 @@ const Arena = ({
   const [sendAddFriendState, setSendAddFriendState] = useState(false); // State lưu trữ thông báo
 
   // Hàm tạo game
-  const createGame = async gameId => {
+  const createGame = async (gameId) => {
     if (!account) {
       // Nếu không có tài khoản nào được kết nối, hiển thị thông báo
       setMessage('Please connect your wallet (MetaMask)');
@@ -64,15 +64,17 @@ const Arena = ({
         signer,
       );
 
-      // const tx = await contract.createGame(
-      //   gameId,
-      //   ethers.utils.parseEther(roomDetailDataModified.price.value.toString()),
-      // );
-      // setMessage(`Transaction sent: ${tx.hash}`);
-      // await tx.wait();
+      const tx = await contract.createGame(
+        gameId,
+        ethers.utils.parseEther(roomDetailDataModified.price.value.toString()),
+      );
+      setMessage(`Transaction sent: ${tx.hash}`);
+      await tx.wait();
       setMessage(`Game created successfully!`);
       createGameDone(gameId);
+      setLoadingCreateBattle(false);
     } catch (error) {
+      setLoadingCreateBattle(false);
       console.log('Error creating game:', error);
       handleRejectCreateBattle(gameId);
       setMessage(`Failed to create game: ${error.message}`);
@@ -80,7 +82,7 @@ const Arena = ({
   };
 
   // Hàm tham gia game
-  const joinGame = async user => {
+  const joinGame = async (user) => {
     if (!account) {
       setMessage('Please connect your wallet (MetaMask)');
       return;
@@ -95,14 +97,14 @@ const Arena = ({
         MultiGameAbi,
         signer,
       );
-      // const tx = await contract.joinGame(gameId, {
-      //   value: ethers.utils.parseEther(
-      //     roomDetailDataModified.price.value.toString(),
-      //   ),
-      // });
-      // setMessage(`Transaction sent: ${tx.hash}`);
-      // await tx.wait();
-      // console.log(gameId);
+      const tx = await contract.joinGame(gameId, {
+        value: ethers.utils.parseEther(
+          roomDetailDataModified.price.value.toString(),
+        ),
+      });
+      setMessage(`Transaction sent: ${tx.hash}`);
+      await tx.wait();
+      console.log(gameId);
       depositDone(gameId);
       setMessage(`Joined game successfully!`);
       setLoadingDeposit(false);
@@ -113,7 +115,7 @@ const Arena = ({
     }
   };
 
-  const sendAddFriend = user => {
+  const sendAddFriend = (user) => {
     setSendAddFriendState(true);
     setTimeout(() => {
       setSendAddFriendState(false);
@@ -122,71 +124,60 @@ const Arena = ({
     handleAddFriend(user);
   };
 
-  useEffect(
-    () => {
-      console.log(chainId, isConfirm);
-      if (!chainId && isConfirm) {
-        const { ethereum } = window;
-        (async () => {
-          try {
-            await ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x61' }], // Binance Smart Chain Testnet Chain ID
-            });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              try {
-                await ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [
-                    {
-                      chainId: '0x61',
-                      chainName: 'Binance Smart Chain Testnet',
-                      nativeCurrency: {
-                        name: 'TBNB',
-                        symbol: 'TBNB',
-                        decimals: 18,
-                      },
-                      rpcUrls: [
-                        'https://data-seed-prebsc-2-s2.binance.org:8545',
-                      ], // Binance Smart Chain Testnet RPC URL
-                      blockExplorerUrls: ['https://testnet.bscscan.com'], // Binance Smart Chain Testnet Block Explorer URL
+  useEffect(() => {
+    console.log(chainId, isConfirm);
+    if (!chainId && isConfirm) {
+      const { ethereum } = window;
+      (async () => {
+        try {
+          await ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x61' }], // Binance Smart Chain Testnet Chain ID
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            try {
+              await ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: '0x61',
+                    chainName: 'Binance Smart Chain Testnet',
+                    nativeCurrency: {
+                      name: 'TBNB',
+                      symbol: 'TBNB',
+                      decimals: 18,
                     },
-                  ],
-                });
-              } catch (addError) {
-                console.log(addError);
-              }
+                    rpcUrls: ['https://data-seed-prebsc-2-s2.binance.org:8545'], // Binance Smart Chain Testnet RPC URL
+                    blockExplorerUrls: ['https://testnet.bscscan.com'], // Binance Smart Chain Testnet Block Explorer URL
+                  },
+                ],
+              });
+            } catch (addError) {
+              console.log(addError);
             }
           }
-          activate(injected);
-        })();
-        isConfirm = false;
-      }
-    },
-    [account, error],
-  );
+        }
+        activate(injected);
+      })();
+      isConfirm = false;
+    }
+  }, [account, error]);
 
-  useEffect(
-    () => {
-      if (!active && localStorage.getItem('accountStatus')) {
-        activate(injected);
-        console.log('a');
-      }
-    },
-    [meetingLogsDetailSelector],
-  );
-  useEffect(
-    () => {
-      console.log(gameId, roomDetailDataModified.price.value.toString());
-      if (!active && localStorage.getItem('accountStatus')) {
-        activate(injected);
-      } else if (checkOwnerRoom) {
-        createGame(gameId);
-      }
-    },
-    [gameId],
-  );
+  useEffect(() => {
+    if (!active && localStorage.getItem('accountStatus')) {
+      activate(injected);
+      console.log('a');
+    }
+  }, [meetingLogsDetailSelector]);
+  useEffect(() => {
+    console.log(gameId, roomDetailDataModified.price.value.toString());
+    if (!active && localStorage.getItem('accountStatus')) {
+      activate(injected);
+    } else if (checkOwnerRoom) {
+      createGame(gameId);
+    }
+  }, [gameId]);
 
   const userIdLocal = Number(localstoreUtilites.getUserIdFromLocalStorage());
   console.log(
@@ -212,10 +203,12 @@ const Arena = ({
                     <img
                       className="room-detail-avatar"
                       src={
-                        meetingLogsDetailSelector.userList.find(i => i.id === p)
+                        meetingLogsDetailSelector.userList.find(
+                          (i) => i.id === p,
+                        )
                           ? meetingLogsDetailSelector.userList.find(
-                            i => i.id === p,
-                          ).avatar
+                              (i) => i.id === p,
+                            ).avatar
                           : ''
                       }
                       alt=""
@@ -228,105 +221,19 @@ const Arena = ({
                         boxShadow: '0px 0px 36px 12px #e7c526',
                       }}
                     >
-                      {meetingLogsDetailSelector.userList.find(i => i.id === p)
+                      {meetingLogsDetailSelector.userList.find(
+                        (i) => i.id === p,
+                      )
                         ? meetingLogsDetailSelector.userList.find(
-                          i => i.id === p,
-                        ).name
+                            (i) => i.id === p,
+                          ).name
                         : ''}
                     </p>
                     {meetingLogsDetailSelector.userList.find(
-                      i => i.id === p,
+                      (i) => i.id === p,
                     ) ? (
-                        meetingLogsDetailSelector.userList.find(i => i.id === p)
-                          .isDeposit ? (
-                            <Button
-                              variant="contained"
-                              // disabled={currentPeople.value === totalPeople.value ? false : true}
-                              color="white"
-                              style={{
-                                background: 'yellowgreen',
-                                color: 'white',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              <FormattedMessage {...messages.deposited} />
-                              <Icon
-                                icon="ic:baseline-done-all"
-                                fontSize="20px"
-                                style={{ marginLeft: 10 }}
-                              />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="contained"
-                              onClick={() =>
-                                joinGame(
-                                  meetingLogsDetailSelector.userList.find(
-                                    i => i.id === p,
-                                  ),
-                                )
-                              }
-                              disabled={
-                                !!(Number(p) !== userIdLocal || loadingDeposit)
-                              }
-                              color="white"
-                              style={{
-                                background: '#00B5AD',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                gap: 10,
-                              }}
-                            >
-                              <FormattedMessage {...messages.deposit} />
-                              {loadingDeposit && Number(p) === userIdLocal ? (
-                                <Icon
-                                  icon="eos-icons:bubble-loading"
-                                  fontSize="20px"
-                                  style={{ marginLeft: 10 }}
-                                />
-                              ) : (
-                                <Icon
-                                  icon="mdi:instant-deposit"
-                                  fontSize="20px"
-                                  style={{ marginLeft: 10 }}
-                                />
-                              )}
-                            </Button>
-                          )
-                      ) : (
-                        ''
-                      )}
-                  </div>
-                ))}
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                {userListId.value.map((p, key) => (
-                  <div key={key} className="room-detail-person">
-                    <img
-                      className="room-detail-avatar"
-                      src={
-                        userList.find(i => i.id === p)
-                          ? userList.find(i => i.id === p).avatar
-                          : ''
-                      }
-                      alt=""
-                    />
-                    <p
-                      style={{
-                        marginTop: 25,
-                        padding: '3px 10px',
-                        borderRadius: '25px',
-                        boxShadow: '0px 0px 36px 12px #e7c526',
-                      }}
-                    >
-                      {userList.find(i => i.id === p)
-                        ? userList.find(i => i.id === p).name
-                        : ''}
-                    </p>
-                    {userList.find(i => i.id === p) ? (
-                      userList.find(i => i.id === p).isDeposit ? (
+                      meetingLogsDetailSelector.userList.find((i) => i.id === p)
+                        .isDeposit ? (
                         <Button
                           variant="contained"
                           // disabled={currentPeople.value === totalPeople.value ? false : true}
@@ -348,7 +255,95 @@ const Arena = ({
                         <Button
                           variant="contained"
                           onClick={() =>
-                            joinGame(userList.find(i => i.id === p))
+                            joinGame(
+                              meetingLogsDetailSelector.userList.find(
+                                (i) => i.id === p,
+                              ),
+                            )
+                          }
+                          disabled={
+                            !!(Number(p) !== userIdLocal || loadingDeposit)
+                          }
+                          color="white"
+                          style={{
+                            background: '#00B5AD',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            gap: 10,
+                          }}
+                        >
+                          <FormattedMessage {...messages.deposit} />
+                          {loadingDeposit && Number(p) === userIdLocal ? (
+                            <Icon
+                              icon="eos-icons:bubble-loading"
+                              fontSize="20px"
+                              style={{ marginLeft: 10 }}
+                            />
+                          ) : (
+                            <Icon
+                              icon="mdi:instant-deposit"
+                              fontSize="20px"
+                              style={{ marginLeft: 10 }}
+                            />
+                          )}
+                        </Button>
+                      )
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                ))}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {userListId.value.map((p, key) => (
+                  <div key={key} className="room-detail-person">
+                    <img
+                      className="room-detail-avatar"
+                      src={
+                        userList.find((i) => i.id === p)
+                          ? userList.find((i) => i.id === p).avatar
+                          : ''
+                      }
+                      alt=""
+                    />
+                    <p
+                      style={{
+                        marginTop: 25,
+                        padding: '3px 10px',
+                        borderRadius: '25px',
+                        boxShadow: '0px 0px 36px 12px #e7c526',
+                      }}
+                    >
+                      {userList.find((i) => i.id === p)
+                        ? userList.find((i) => i.id === p).name
+                        : ''}
+                    </p>
+                    {userList.find((i) => i.id === p) ? (
+                      userList.find((i) => i.id === p).isDeposit ? (
+                        <Button
+                          variant="contained"
+                          // disabled={currentPeople.value === totalPeople.value ? false : true}
+                          color="white"
+                          style={{
+                            background: 'yellowgreen',
+                            color: 'white',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          <FormattedMessage {...messages.deposited} />
+                          <Icon
+                            icon="ic:baseline-done-all"
+                            fontSize="20px"
+                            style={{ marginLeft: 10 }}
+                          />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          onClick={() =>
+                            joinGame(userList.find((i) => i.id === p))
                           }
                           disabled={
                             !!(Number(p) !== userIdLocal || loadingDeposit)
@@ -390,6 +385,13 @@ const Arena = ({
       </div>
     );
   }
+  console.log(
+    userListId,
+    friendListDataSelector.find(
+      (m) => m.userId1 === Number(7) || m.userId2 === Number(7),
+    ),
+    userIdLocal,
+  );
   return (
     <div>
       <React.Fragment>
@@ -398,7 +400,7 @@ const Arena = ({
             <div key={key} className="room-detail-person">
               {checkOwnerRoom &&
               userList.find(
-                i => i.ownerRoom === roomDetailDataModified.id.value,
+                (i) => i.ownerRoom === roomDetailDataModified.id.value,
               ).id !== p &&
               !roomDetailDataModified.isRunning.value ? (
                 <Icon
@@ -408,20 +410,20 @@ const Arena = ({
                   onClick={() => handleKick(p)}
                 />
               ) : (
-                  <div style={{ height: 30 }} />
+                <div style={{ height: 30 }} />
               )}
               <img
                 className="room-detail-avatar"
                 src={
-                  userList.find(i => i.id === p)
-                    ? userList.find(i => i.id === p).avatar
+                  userList.find((i) => i.id === p)
+                    ? userList.find((i) => i.id === p).avatar
                     : ''
                 }
                 alt=""
               />
               {friendListDataSelector.find(
-                m => !(m.userId1 === p) || !(m.userId2 === p),
-              ) || userIdLocal === Number(p) ? null : (
+                (m) => m.userId1 === Number(p) || m.userId2 === Number(p),
+              ) || Number(userIdLocal) === Number(p) ? null : (
                 <Icon
                   icon={
                     sendAddFriendState
@@ -430,7 +432,9 @@ const Arena = ({
                   }
                   style={{ marginLeft: 10, color: 'white' }}
                   className="add-friend"
-                  onClick={() => sendAddFriend(userList.find(i => i.id === p))}
+                  onClick={() =>
+                    sendAddFriend(userList.find((i) => i.id === p))
+                  }
                 />
               )}
               <p
@@ -441,8 +445,8 @@ const Arena = ({
                   boxShadow: '0px 0px 36px 12px #e7c526',
                 }}
               >
-                {userList.find(i => i.id === p)
-                  ? userList.find(i => i.id === p).name
+                {userList.find((i) => i.id === p)
+                  ? userList.find((i) => i.id === p).name
                   : ''}
               </p>
             </div>

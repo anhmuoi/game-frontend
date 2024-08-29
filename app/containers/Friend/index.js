@@ -441,7 +441,6 @@ export class MarketInformationPage extends React.Component {
       userId,
     } = friendDataModified.toJS();
 
-    console.log(userList);
     let user = null;
     if (userList && userList.length > 0) {
       user = userList.find(
@@ -715,24 +714,46 @@ export class MarketInformationPage extends React.Component {
                     </div>
                   </div>
                 </div>
+
                 <div
                   style={{
-                    fontWeight: 'bold',
-                    fontSize: 20,
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: 20,
                   }}
                 >
-                  <div>
-                    <FormattedMessage {...messages.phone} />:
+                  <div
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 20,
+                    }}
+                  >
+                    <div>
+                      <FormattedMessage {...messages.phone} />:
+                    </div>
+                    <p style={{ fontWeight: 'bold', fontSize: 20 }}>
+                      {
+                        userList.find((m) => m.id === this.state.idUserSelected)
+                          .phone
+                      }
+                    </p>
                   </div>
-                  <p style={{ fontWeight: 'bold', fontSize: 20 }}>
-                    {
-                      userList.find((m) => m.id === this.state.idUserSelected)
-                        .phone
+                  <div
+                    onClick={() =>
+                      this.setState({
+                        idUserSelected: null,
+                      })
                     }
-                  </p>
+                  >
+                    <Icon
+                      icon="solar:square-double-alt-arrow-up-bold"
+                      fontSize="40px"
+                      style={{ cursor: 'pointer', color: '#00B5AD' }}
+                    />
+                  </div>
                 </div>
               </div>
             ) : null}

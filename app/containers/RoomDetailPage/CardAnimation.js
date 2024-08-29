@@ -27,7 +27,6 @@ const CardAnimation = ({ x, y, data, runCountTimePlayer }) => {
   //     }
   //   }, [animate, runCountTimePlayer]);
 
-  console.log(x, y);
 
   let cardImage = null;
   let cardImage1 = null;

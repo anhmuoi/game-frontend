@@ -92,6 +92,7 @@ import {
   AgreeMess,
   agreeAddFriend,
   existItem,
+  manaNotEnough,
   msgKick,
   notiGetFriend,
   textUpdateRoom,
@@ -616,7 +617,10 @@ export class RoomDetailInformationPage extends React.Component {
               checkHp = true;
             }
           });
-          if ((countCard.length === 52 || checkHp) && this.state.winner === null) {
+          if (
+            (countCard.length === 52 || checkHp) &&
+            this.state.winner === null
+          ) {
             console.log('end');
             const msgId = create_UUID();
 
@@ -2078,6 +2082,18 @@ export class RoomDetailInformationPage extends React.Component {
   };
 
   clickUseNFT = (player, NFT) => {
+    if (player.mana < NFT.mana) {
+      toast.error(<div style={{ color: 'white' }}>{manaNotEnough()}</div>, {
+        position: toast.POSITION.TOP_RIGHT,
+        hideProgressBar: false,
+        autoClose: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
     if (NFT.id === 'power-18') {
     }
     this.setState({
@@ -3627,6 +3643,7 @@ export class RoomDetailInformationPage extends React.Component {
                             alt=""
                             key={card.id}
                             style={{ width: 60, zIndex: 10, cursor: 'pointer' }}
+                            className={card.choose ? `` : `card-hover`}
                             onClick={() => {
                               if (
                                 isClickCard === false &&

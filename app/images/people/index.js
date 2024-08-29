@@ -157,6 +157,12 @@ import defense from './defense.png';
 import player01 from './player01.png';
 import player02 from './player02.png';
 
+export const reward = [
+  { id: 'power-21', image: pw21, name: 'tấn công x2', mana: 30 },
+  { id: 'power-22', image: pw22, name: 'tấn công x3', mana: 40 },
+  { id: 'power-26', image: pw26, name: 'xuyên giáp', mana: 25 },
+];
+
 export const allCards = [
   ace,
   bakezori,

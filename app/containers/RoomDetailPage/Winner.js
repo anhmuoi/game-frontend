@@ -12,11 +12,12 @@ import { localstoreUtilites } from '../../utils/persistenceData.js';
 import './Winner.css'; // Ensure you create a corresponding CSS file for styling
 import messages from './messages.js';
 import './styles.css';
-import { power } from '../../images/people/index.js';
+import { power, reward } from '../../images/people/index.js';
 
 const getRandomItems = (array, num) => {
-  const shuffled = array.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, num);
+  // const shuffled = array.sort(() => 0.5 - Math.random());
+  // return shuffled.slice(0, num);
+  return [...reward];
 };
 const Winner = ({
   winner,
@@ -52,15 +53,15 @@ const Winner = ({
         randomItemsId.push(i.id);
       });
       postAssignItemNFT(randomItemsId);
-      // const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // const signer = provider.getSigner();
-      // const contract = new ethers.Contract(
-      //   window.env.REACT_APP_CONTRACT_ADDRESS,
-      //   MultiGameAbi,
-      //   signer,
-      // );
-      // const tx = await contract.declareWinner(gameId, winner.walletAddress);
-      // await tx.wait();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        window.env.REACT_APP_CONTRACT_ADDRESS,
+        MultiGameAbi,
+        signer,
+      );
+      const tx = await contract.declareWinner(gameId, winner.walletAddress);
+      await tx.wait();
       doneReceiveReward(gameId, randomItems);
       setLoading(false);
     } catch (error) {

@@ -228,6 +228,21 @@ export const buyNftSuccess = () => {
       return 'You buy NFT successfully!';
   }
 };
+export const manaNotEnough = () => {
+  switch (lang) {
+    case LANGUAGE.ENGLISH:
+      return 'You are not enough mana!';
+    case LANGUAGE.KOREA:
+      return 'You are not enough mana!';
+    case LANGUAGE.JAPANESE:
+      return 'You are not enough mana!';
+    case LANGUAGE.VIETNAMESE:
+      return 'Bạn không đủ năng lượng!';
+
+    default:
+      return 'You are not enough mana!';
+  }
+};
 export const AgreeMess = () => {
   switch (lang) {
     case LANGUAGE.ENGLISH:
